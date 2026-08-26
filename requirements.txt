@@ -4,6 +4,7 @@ cssbeautifier==2.0.3
 django==6.1
 djlint==1.44.2
 editorconfig==0.17.1
+gunicorn==26.2.0
 jsbeautifier==2.0.3
 json5==0.15.0
 pathspec==1.1.1
