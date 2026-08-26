@@ -16,14 +16,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM base AS runner
 
-RUN addgroup --system app && adduser --system --group app
+RUN groupadd --system app && useradd --system --gid app --create-home app
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"
 
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
-COPY . .
+COPY --chown=app:app . .
 
 USER app
 
