@@ -1,13 +1,11 @@
 [project]
-name = "django-test"
+name = "portfolio"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
-    "asgiref==3.12.1",
-    "django==6.1",
-    "django-environ==0.14.0",
+    "django>=6.1",
+    "psycopg[binary]>=3.3.4",
     "python-dotenv>=1.2.3",
-    "sqlparse==0.6.0",
 ]
 
 [dependency-groups]
@@ -85,4 +83,3 @@ docstring-code-line-length = "dynamic"
 profile = "django"
 indent = 2
 blank_line_after_tag = "load,extends"
-format_attribute_template_tags = true
