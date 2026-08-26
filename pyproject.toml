@@ -76,7 +76,7 @@ line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "**/migrations/*" = ["ALL"]
 
 [tool.djlint]
