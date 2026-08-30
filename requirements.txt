@@ -1,0 +1,17 @@
+asgiref==3.12.1
+click==8.4.2
+cssbeautifier==2.0.3
+django==6.1
+djlint==1.44.2
+editorconfig==0.17.1
+gunicorn==26.2.0
+jsbeautifier==2.0.3
+json5==0.15.0
+pathspec==1.1.1
+psycopg==3.3.4
+psycopg-binary==3.3.4
+python-dotenv==1.2.3
+pyyaml==6.0.3
+regex==2026.7.19
+ruff==0.16.4
+sqlparse==0.6.0
