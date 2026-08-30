@@ -29,13 +29,6 @@ ALLOWED_HOSTS = [
 ]
 ROOT_URLCONF = os.getenv("DJANGO_ROOT_URLCONF", "config.urls")
 WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "config.wsgi.application")
-USE_X_FORWARDED_HOST = os.getenv("DJANGO_USE_X_FORWARDED_HOST", "True") == "True"
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-CSRF_TRUSTED_ORIGINS = [
-    host.strip()
-    for host in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
-    if host.strip()
-]
 
 # Application definition
 
