@@ -5,8 +5,11 @@ requires-python = ">=3.14"
 dependencies = [
     "django>=6.1",
     "gunicorn>=26.2.0",
-    "psycopg[binary]>=3.3.4",
+    "psycopg[binary]>=3.3.5",
     "python-dotenv>=1.2.3",
+    "requests>=2.34.2",
+    "urllib3>=2.7.0",
+    "whitenoise>=6.12.0",
 ]
 
 [dependency-groups]
@@ -84,3 +87,5 @@ docstring-code-line-length = "dynamic"
 profile = "django"
 indent = 2
 blank_line_after_tag = "load,extends"
+line_break_after_multiline_tag = true
+max_line_length = 120
