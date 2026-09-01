@@ -16,6 +16,11 @@
 # • SECURITY CONSIDERATIONS: Includes security patterns for .env files and credentials
 # • BEST PRACTICES: Review before use, test with your specific Django setup
 
+# Custom
+devenv.*
+prod.compose.yml
+compose.yml
+
 # ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 # Security & Sensitive Data
 # ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
@@ -167,8 +172,6 @@ coverage.xml
 **/.hg/
 **/.svn/
 **/media/
-**/static/
-**/staticfiles/
 
 ._*
 !*/migrations/__init__.py
