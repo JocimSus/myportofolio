@@ -40,10 +40,10 @@ jobs:
             type=sha
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
-          file: ./Dockerfile
+          file: ./DockerfileNoPWS
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
