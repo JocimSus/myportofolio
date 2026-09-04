@@ -1,4 +1,4 @@
-{% load static %}
+{% load static tailwind_tags %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -13,6 +13,7 @@
           rel="stylesheet" />
     <link rel="stylesheet" href="{% static "css/style.css" %}" />
     <link rel="stylesheet" href="{% static "home/css/style.css" %}" />
+    {% tailwind_css %}
   </head>
   <body>
     <header class="site-header">
