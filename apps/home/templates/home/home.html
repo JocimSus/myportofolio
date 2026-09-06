@@ -159,15 +159,15 @@
       </div>
     </main>
     {% comment %}Footer{% endcomment %}
-    <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-bold px-10 gap-4 text-xs lg:text-xl">
+    <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-light px-5 gap-4 text-xs lg:text-xl">
       <p class="flex items-center gap-2">
         <i class="fa-solid fa-copyright"></i>
         <span>2026 Joachim Susatiyo, All Rights Reserved.</span>
       </p>
       {% comment %}Vertical Line Separator{% endcomment %}
-      <div class="w-1 h-full bg-primary-100 mx-3"></div>
+      <div class="w-1 h-full bg-primary-100 lg:mx-3"></div>
       {% comment %}Page Links{% endcomment %}
-      <ul class="flex h-full items-center justify-center flex-col gap-5">
+      <ul class="flex h-full items-center justify-center flex-col gap-5 font-bold">
         <li>
           <a href="{% url 'home' %}" class="hover:text-tertiary-100">profile</a>
         </li>
@@ -188,7 +188,7 @@
         </ul>
         <span class="mr-2">
           joachim.susatiyo[at]ui.ac.id
-          <i class="fa-solid fa-envelope"></i>
+          <i class="fa-solid fa-envelope !hidden lg:!inline-block"></i>
         </span>
       </div>
     </footer>
