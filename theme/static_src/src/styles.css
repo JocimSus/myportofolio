@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+/**
+  * A catch-all path to Django template files, JavaScript, and Python files
+  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
+  *
+  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
+  * the scope of this path.
+  */
+@source "../../../**/*.{html,py,js}";
+
+@theme {
+  /* FONTS */
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-ibm-plex: "IBM Plex Serif", ui-serif, system-ui, serif;
+
+  /* COLORS */
+  --color-primary-100: #844DCC;
+  --color-primary-200: #7444B2;
+  --color-primary-300: #633A99;
+  --color-primary-400: #533080;
+  --color-primary-500: #422766;
+  --color-primary-600: #321D4D;
+  --color-primary-700: #211333;
+  --color-primary-800: #180E25;
+
+  --color-secondary-100: #4D7FCC;
+  --color-secondary-200: #446FB2;
+  --color-secondary-300: #3A5F99;
+  --color-secondary-400: #304F80;
+  --color-secondary-500: #273F66;
+  --color-secondary-600: #1D304D;
+  --color-secondary-700: #132033;
+  --color-secondary-800: #0E1725;
+
+  --color-tertiary-100: #CC4DAB;
+  --color-tertiary-200: #B24496;
+  --color-tertiary-300: #993A80;
+  --color-tertiary-400: #80306B;
+  --color-tertiary-500: #662755;
+  --color-tertiary-600: #4D1D40;
+  --color-tertiary-700: #33132B;
+  --color-tertiary-800: #250E1F;
+
+  --color-neutral-100: #F2F2F7;
+  --color-neutral-200: #E5E5EA;
+  --color-neutral-300: #D1D1D6;
+}
+
+@layer base {
+  body {
+    @apply bg-neutral-100 text-black;
+  }
+  html {
+    @apply font-ibm-plex;
+  }
+}
+
+@layer utilities {
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+      filter: var(--animate-blur, blur(0));
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes fade-in-bottom {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+      filter: var(--animate-blur, blur(0));
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 1200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: opacity, transform;
+  }
+
+  .animate-fade-in-down {
+    animation: fade-in-bottom 1200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: opacity, transform;
+  }
+
+  .animate-blur {
+    --animate-blur: blur(12px);
+    will-change: transform, opacity, filter;
+  }
+
+  @keyframes slide-from-top {
+    from {
+      opacity: 0;
+      transform: translateY(-300px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-from-left {
+    from {
+      opacity: 0;
+      transform: translateX(-300px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-from-right {
+    from {
+      opacity: 0;
+      transform: translateX(300px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-from-bottom {
+    from {
+      opacity: 0;
+      transform: translateY(100px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-top {
+    animation: slide-from-top 2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: opacity, transform;
+  }
+
+  .animate-slide-bottom {
+    animation: slide-from-bottom 2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: opacity, transform;
+  }
+
+  .animate-slide-left {
+    animation: slide-from-left 1.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: opacity, transform;
+  }
+
+  .animate-slide-right {
+    animation: slide-from-right 1.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: opacity, transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-slide-top,
+    .animate-slide-left,
+    .animate-slide-right,
+    .animate-slide-bottom,
+    .animate-fade-in-up,
+    .animate-fade-in-bottom,
+    .animate-blur {
+      animation: none;
+    }
+  }
+}
+
+/* Custom Styling */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+

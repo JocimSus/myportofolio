@@ -3,7 +3,8 @@ name = "portfolio"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
-    "django>=6.1",
+    "django==5.2",
+    "django-tailwind>=4.5.0",
     "gunicorn>=26.2.0",
     "psycopg[binary]>=3.3.5",
     "python-dotenv>=1.2.3",
@@ -14,6 +15,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "django-tailwind[cookiecutter,honcho,reload]>=4.5.0",
     "djlint>=1.44.2",
     "ruff>=0.16.4",
 ]
