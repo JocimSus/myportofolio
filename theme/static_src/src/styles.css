@@ -8,3 +8,47 @@
   * the scope of this path.
   */
 @source "../../../**/*.{html,py,js}";
+
+@theme {
+  /* FONTS */
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-ibm-plex: "IBM Plex Serif", ui-serif, system-ui, serif;
+
+  /* COLORS */
+  --color-primary-100: #844DCC;
+  --color-primary-200: #7444B2;
+  --color-primary-300: #633A99;
+  --color-primary-400: #533080;
+  --color-primary-500: #422766;
+  --color-primary-600: #321D4D;
+  --color-primary-700: #211333;
+  --color-primary-800: #180E25;
+
+  --color-secondary-100: #4D7FCC;
+  --color-secondary-200: #446FB2;
+  --color-secondary-300: #3A5F99;
+  --color-secondary-400: #304F80;
+  --color-secondary-500: #273F66;
+  --color-secondary-600: #1D304D;
+  --color-secondary-700: #132033;
+  --color-secondary-800: #0E1725;
+
+  --color-tertiary-100: #CC4DAB;
+  --color-tertiary-200: #B24496;
+  --color-tertiary-300: #993A80;
+  --color-tertiary-400: #80306B;
+  --color-tertiary-500: #662755;
+  --color-tertiary-600: #4D1D40;
+  --color-tertiary-700: #33132B;
+  --color-tertiary-800: #250E1F;
+
+  --color-neutral-100: #F2F2F7;
+  --color-neutral-200: #E5E5EA;
+  --color-neutral-300: #D1D1D6;
+}
+
+@layer base {
+  body {
+    @apply font-ibm-plex bg-neutral-100 text-black;
+  }
+}

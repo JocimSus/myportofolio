@@ -9,14 +9,15 @@
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
     --color-gray-50: oklch(98.5% 0.002 247.839);
+    --color-neutral-100: #F2F2F7;
     --color-black: #000;
-    --color-white: #fff;
     --text-5xl: 3rem;
     --text-5xl--line-height: 1;
     --tracking-normal: 0em;
     --leading-normal: 1.5;
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
+    --font-ibm-plex: "IBM Plex Serif", ui-serif, system-ui, serif;
   }
 }
 @layer base {
@@ -195,27 +196,14 @@
   .flex {
     display: flex;
   }
-  .table {
-    display: table;
-  }
   .h-screen {
     height: 100vh;
-  }
-  .border-collapse {
-    border-collapse: collapse;
-  }
-  .resize {
-    resize: both;
   }
   .items-center {
     align-items: center;
   }
   .justify-center {
     justify-content: center;
-  }
-  .border {
-    border-style: var(--tw-border-style);
-    border-width: 1px;
   }
   .bg-gray-50 {
     background-color: var(--color-gray-50);
@@ -238,18 +226,13 @@
   .text-black {
     color: var(--color-black);
   }
-  .underline {
-    text-decoration-line: underline;
-  }
-  .outline {
-    outline-style: var(--tw-outline-style);
-    outline-width: 1px;
-  }
 }
-@property --tw-border-style {
-  syntax: "*";
-  inherits: false;
-  initial-value: solid;
+@layer base {
+  body {
+    background-color: var(--color-neutral-100);
+    font-family: var(--font-ibm-plex);
+    color: var(--color-black);
+  }
 }
 @property --tw-leading {
   syntax: "*";
@@ -259,18 +242,11 @@
   syntax: "*";
   inherits: false;
 }
-@property --tw-outline-style {
-  syntax: "*";
-  inherits: false;
-  initial-value: solid;
-}
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
-      --tw-border-style: solid;
       --tw-leading: initial;
       --tw-tracking: initial;
-      --tw-outline-style: solid;
     }
   }
 }
