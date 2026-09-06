@@ -16,3 +16,6 @@ devenv.local.yaml
 # python
 __pycache__/
 *.py~
+
+# tailwind
+theme/static/css/dist/
