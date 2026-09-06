@@ -217,14 +217,8 @@
     border-style: var(--tw-border-style);
     border-width: 1px;
   }
-  .bg-black {
-    background-color: var(--color-black);
-  }
   .bg-gray-50 {
     background-color: var(--color-gray-50);
-  }
-  .bg-white {
-    background-color: var(--color-white);
   }
   .font-serif {
     font-family: var(--font-serif);
