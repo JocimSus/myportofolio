@@ -30,6 +30,10 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"
 
+# Dummy env variables for build time
+ENV DB_PASSWORD="your_db_password"
+ENV DJANGO_SECRET_KEY="your_django_secret_key"
+
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --from=builder --chown=app:app /usr/local/bin/tailwindcss /usr/local/bin/tailwindcss
 COPY --chown=app:app . .
