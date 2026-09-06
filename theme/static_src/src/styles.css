@@ -168,6 +168,18 @@
     will-change: opacity, transform;
   }
 
+  @keyframes scroll-interests {
+    0%, 20%   { transform: translateY(40%); }    /* 1st: Web Development */
+    25%, 45%  { transform: translateY(20%); }  /* 2nd: System Design */
+    50%, 70%  { transform: translateY(0%); }  /* 3rd: Operating Systems */
+    75%, 95%  { transform: translateY(-20%); }  /* 4th: Cloud Infrastructure */
+    100%      { transform: translateY(-40%); }  /* 5th: Duplicate (Web Development) */
+  }
+
+  .animate-scroll-interests {
+    animation: scroll-interests 8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-slide-top,
     .animate-slide-left,
