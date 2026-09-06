@@ -7,7 +7,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Joachim's personal portofolio website" />
-    <title>Joyous - Portofolio</title>
+    <title>Joachim - Portofolio</title>
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}" />
     {% comment %}Google Fonts{% endcomment %}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,7 +27,7 @@
     {% tailwind_css %}
   </head>
   <body class="relative">
-    {% comment %} Background Texture {% endcomment %}
+    {% comment %}Background Texture{% endcomment %}
     <div class="absolute inset-0 pointer-events-none opacity-10 bg-repeat -z-10"
          style="background-image: url('{% static 'img/seamless-paper-texture.webp' %}')"></div>
     {% comment %}Navigation Bar{% endcomment %}
@@ -61,7 +61,7 @@
       </nav>
     </header>
     {% comment %}Profile Page Content{% endcomment %}
-    <main class="w-full">
+    <main class="w-full mb-20">
       <div class="max-w-full mx-2 lg:max-w-6xl lg:mx-auto h-full">
         {% comment %}Hero Section{% endcomment %}
         <section class="flex flex-col lg:flex-row justify-center items-center h-screen outline-yellow-500">
@@ -90,24 +90,24 @@
         {% comment %}Section Separator{% endcomment %}
         <div class="bg-tertiary-600 w-full h-0.5 rounded-full my-10"></div>
         {% comment %}About Me Section{% endcomment %}
-        <section class="flex flex-col items-center w-full mb-50">
+        <section class="flex flex-col items-center w-full">
           <p class="text-center text-2xl font-bold mb-10">
             what you should know.
             <br />
             <span class="text-sm text-secondary-100 italic">about me</span>
           </p>
-          {% comment %} Student Card Mock {% endcomment %}
+          {% comment %}Student Card Mock{% endcomment %}
           <div class="relative flex items-center bg-neutral-200 w-80 h-40 lg:w-100 lg:h-50 rounded-lg drop-shadow-2xl gap-10 px-5 mb-20 hover:-translate-y-2 transition-transform ease-in-out duration-300">
             <img src="{% static 'home/img/ui.webp' %}"
                  alt="Universitas Indonesia Logo"
                  width="100"
                  height="100"
-                 class="absolute top-5 right-5 opacity-50 -z-1">
+                 class="absolute top-5 right-5 opacity-50 -z-1" />
             <div>
-              <img src="{% static "home/img/cat.webp" %}"
+              <img src="{% static 'home/img/cat.webp' %}"
                    alt="Student"
                    width="100"
-                   height="100">
+                   height="100" />
             </div>
             <p class="text-lg lg:text-2xl">
               <span class="font-bold">2506602694</span>
@@ -118,25 +118,56 @@
                 Ilmu Komputer - S1
               </span>
             </p>
-            {% comment %} Yellow Line {% endcomment %}
+            {% comment %}Yellow Line{% endcomment %}
             <div class="absolute bottom-0 left-0 right-0 h-3 bg-yellow-300 rounded-b-lg"></div>
           </div>
-          <p class="max-w-xs lg:max-w-lg font-semibold text-lg">
-            a passionate computer science student at Universitas Indonesia. I love exploring new technologies and applying them to solve real-world problems.
+          <p class="max-w-xs lg:max-w-lg font-semibold text-lg">a passionate computer science student at Universitas Indonesia. I love exploring new technologies and applying them to solve real-world problems.</p>
+        </section>
+        <div class="bg-secondary-100 w-1/2 h-0.5 rounded-full mt-10 mb-5 mx-auto"></div>
+        {% comment %}My Interests Section{% endcomment %}
+        <section class="flex flex-col items-center w-full">
+          <p class="text-center font-bold mb-5">
+            <span class="text-sm text-secondary-100 italic">my interests</span>
           </p>
+          <p class="text-center font-bold text-4xl mb-10">I'm interested in</p>
+          <div class="flex flex-col bg-linear-to-b from-primary-800 to-tertiary-800 rounded-2xl w-100 h-20 justify-center text-neutral-100 text-center font-bold text-4xl overflow-hidden">
+            <div class="animate-scroll-interests flex flex-col w-full">
+              <p class="h-20 flex items-center justify-center shrink-0">Web Development</p>
+              <p class="h-20 flex items-center justify-center shrink-0">System Design</p>
+              <p class="h-20 flex items-center justify-center shrink-0">Operating Systems</p>
+              <p class="h-20 flex items-center justify-center shrink-0">Cloud Infrastructure</p>
+              <p class="h-20 flex items-center justify-center shrink-0">Web Development</p>
+            </div>
+          </div>
+        </section>
+        <div class="bg-secondary-100 w-1/2 h-0.5 rounded-full mt-10 mb-5 mx-auto"></div>
+        {% comment %}Experience and Competitions Section{% endcomment %}
+        <section class="flex flex-col items-center w-full">
+          <p class="text-center font-bold mb-5">
+            <span class="text-sm text-secondary-100 italic">what I'm proud of</span>
+          </p>
+          <ul class="flex flex-col bg-linear-to-b from-primary-800 to-secondary-600 rounded-2xl w-full md:w-125 py-6 justify-center text-neutral-100 text-center font-semibold text-md lg:text-2xl gap-4">
+            <li class="relative pb-4 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-2/3 after:h-0.5 after:bg-neutral-300">
+              Winner of RISTEK Hackathon 2026
+            </li>
+            <li class="relative pb-4 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-2/3 after:h-0.5 after:bg-neutral-300">
+              Vice Lead of OH Fasilkom 2026
+            </li>
+            <li>Member of RISTEK Web Development</li>
+          </ul>
         </section>
       </div>
     </main>
     {% comment %}Footer{% endcomment %}
-    <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-bold px-10 gap-4 text-xs lg:text-md">
+    <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-light px-5 gap-4 text-xs lg:text-xl">
       <p class="flex items-center gap-2">
         <i class="fa-solid fa-copyright"></i>
         <span>2026 Joachim Susatiyo, All Rights Reserved.</span>
       </p>
-      {% comment %} Vertical Line Separator {% endcomment %}
-      <div class="w-1 h-full bg-primary-100 mx-3"></div>
-      {% comment %} Page Links {% endcomment %}
-      <ul class="flex h-full items-center justify-center flex-col gap-5">
+      {% comment %}Vertical Line Separator{% endcomment %}
+      <div class="w-1 h-full bg-primary-100 lg:mx-3"></div>
+      {% comment %}Page Links{% endcomment %}
+      <ul class="flex h-full items-center justify-center flex-col gap-5 font-bold">
         <li>
           <a href="{% url 'home' %}" class="hover:text-tertiary-100">profile</a>
         </li>
@@ -145,23 +176,19 @@
           <a href="" class="hover:text-tertiary-100">projects</a>
         </li>
       </ul>
-      {% comment %} Social Media {% endcomment %}
+      {% comment %}Social Media{% endcomment %}
       <div class="flex flex-col ml-auto text-primary-100 gap-2">
-        <ul class="flex ml-auto">
+        <ul class="flex ml-auto gap-2">
           <li>
-            <a href="https://github.com/JocimSus">
-              <i class="fa-brands fa-square-github text-4xl"></i>
-            </a>
+            <a href="https://github.com/JocimSus"><i class="fa-brands fa-square-github text-4xl"></i></a>
           </li>
           <li>
-            <a href="https://linkedin.com/in/joachim-susatiyo-049339292">
-              <i class="fa-brands fa-linkedin text-4xl"></i>
-            </a>
+            <a href="https://linkedin.com/in/joachim-susatiyo-049339292"><i class="fa-brands fa-linkedin text-4xl"></i></a>
           </li>
         </ul>
         <span class="mr-2">
           joachim.susatiyo[at]ui.ac.id
-          <i class="fa-solid fa-envelope"></i>
+          <i class="fa-solid fa-envelope !hidden lg:!inline-block"></i>
         </span>
       </div>
     </footer>

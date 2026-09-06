@@ -48,4 +48,4 @@ USER app
 EXPOSE 80
 
 ENTRYPOINT ["scripts/entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:80", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-", "--capture-output", "config.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "--capture-output", "config.wsgi:application"]
