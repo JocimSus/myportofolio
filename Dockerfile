@@ -43,6 +43,8 @@ RUN chmod +x scripts/entrypoint.sh
 RUN /usr/local/bin/tailwindcss -i ./theme/static_src/src/styles.css -o ./theme/static/css/dist/styles.css --minify
 RUN python manage.py collectstatic --noinput
 
+RUN chown -R app:app /app
+
 USER app
 
 EXPOSE 80
