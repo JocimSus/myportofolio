@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "tailwind",
-    "theme",
+    "apps.theme",
     "apps.home",
 ]
 
@@ -137,7 +137,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 WHITENOISE_USE_FINDERS = True
 
-TAILWIND_APP_NAME = "theme"
+TAILWIND_APP_NAME = "apps.theme"
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration

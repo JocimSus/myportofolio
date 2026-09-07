@@ -18,4 +18,4 @@ __pycache__/
 *.py~
 
 # tailwind
-theme/static/css/dist/
+apps/theme/static/css/dist/
