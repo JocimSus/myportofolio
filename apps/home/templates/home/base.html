@@ -64,7 +64,7 @@
     </header>
     {% block content %}{% endblock %}
     {% comment %}Footer{% endcomment %}
-    <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-light px-5 gap-4 text-xs lg:text-xl">
+    <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-light px-5 gap-4 text-sm lg:text-xl">
       <p class="flex items-center gap-2">
         <i class="fa-solid fa-copyright"></i>
         <span>2026 {{ name }}, All Rights Reserved.</span>
@@ -72,7 +72,7 @@
       {% comment %}Vertical Line Separator{% endcomment %}
       <div class="w-1 h-full bg-primary-100 lg:mx-3"></div>
       {% comment %}Page Links{% endcomment %}
-      <ul class="py-2 grid-flow-col grid-rows-3 items-center h-full justify-center text-sm font-bold hidden lg:grid">
+      <ul class="py-2 grid-flow-col grid-rows-3 items-center h-full justify-center text-lg font-bold hidden lg:grid">
         <li>
           <a href="{% url 'home:profile' %}" class="hover:text-tertiary-100">profile</a>
         </li>
