@@ -40,7 +40,8 @@ COPY --chown=app:app . .
 
 RUN chmod +x scripts/entrypoint.sh
 
-RUN /usr/local/bin/tailwindcss -i ./theme/static_src/src/styles.css -o ./theme/static/css/dist/styles.css --minify
+RUN /usr/local/bin/tailwindcss -i ./apps/theme/static_src/src/styles.css \
+    -o ./apps/theme/static/css/dist/styles.css --minify
 RUN python manage.py collectstatic --noinput
 
 RUN chown -R app:app /app
