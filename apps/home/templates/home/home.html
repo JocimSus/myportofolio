@@ -1,199 +1,98 @@
-{% load static tailwind_tags %}
+{% extends "home/base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    {% comment %}Meta Tags{% endcomment %}
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="{{ nick }}'s personal portofolio website" />
-    <title>{{ nick }} - Portofolio</title>
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}" />
-    {% comment %}Google Fonts{% endcomment %}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-          rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-          rel="stylesheet" />
-    {% comment %}Font Awesome{% endcomment %}
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer" />
-    {% comment %}Styles{% endcomment %}
-    <link rel="stylesheet" href="{% static 'home/css/style.css' %}" />
-    {% tailwind_css %}
-  </head>
-  <body class="relative">
-    {% comment %}Background Texture{% endcomment %}
-    <div class="absolute inset-0 pointer-events-none opacity-10 bg-repeat -z-10"
-         style="background-image: url('{% static 'img/seamless-paper-texture.webp' %}')"></div>
-    {% comment %}Navigation Bar{% endcomment %}
-    <header class="w-full">
-      <nav class="flex justify-between lg:justify-center text-2xl md:text-4xl text-primary-800 my-2 items-center">
-        {% comment %}Leading Nav Decor{% endcomment %}
-        <div class="mr-10 ml-1 md:mr-50">
-          <img src="{% static 'home/img/spinning_cube.gif' %}"
-               alt="spinning cube"
-               width="50"
-               height="50" />
+{% load static %}
+
+{% block content %}
+  {% comment %}Profile Page Content{% endcomment %}
+  <main class="w-full mb-20">
+    <div class="max-w-full mx-2 lg:max-w-6xl lg:mx-auto h-full">
+      {% comment %}Hero Section{% endcomment %}
+      <section class="flex flex-col lg:flex-row justify-center items-center h-screen outline-yellow-500">
+        <p class="text-4xl font-bold ml-20 mb-10 mt-20 lg:mb-50">
+          <span class="text-primary-100 inline-block animate-fade-in-down animate-blur">Halo!</span> I'm
+          <br />
+          <span class="font-inter font-bold text-6xl">{{ name }}</span>
+          <br />
+          a <span class="font-light text-red-500">Computer</span> <span class="font-light text-blue-500">Science</span> student
+          <br />
+          at <span class="font-light text-yellow-500">Universitas Indonesia</span>
+        </p>
+        <div class="group relative w-full lg:w-1/2 h-full animate-fade-in-up animate-blur">
+          <img src="{% static 'home/img/me_standing.webp' %}"
+               alt="{{ nick }}"
+               width="500"
+               height="500"
+               class="absolute w-full h-full object-contain object-center inset-0 transition-opacity duration-300 group-hover:opacity-0 hidden lg:block" />
+          <img src="{% static 'home/img/me_posed.webp' %}"
+               alt="{{ nick }} Hover"
+               width="500"
+               height="500"
+               class="absolute w-full h-full object-contain object-center inset-0 transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100" />
         </div>
-        {% comment %}Nav Links{% endcomment %}
-        <ul class="flex flex-row gap-5">
-          <li>
-            <a href="{% url 'home:home' %}"
-               class="{% if request.path == '/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
-              profile
-            </a>
-          </li>
-          <li>
-            {% comment %}Will implement after pages are allowed{% endcomment %}
-            <a href="" class="hover:text-tertiary-100">projects</a>
-          </li>
-          <li>
-            <a href="{% url 'home:experience' %}"
-               class="{% if request.path == '/experience/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
-              experience
-            </a>
-          </li>
-        </ul>
-        {% comment %}Tailing Nav Decor{% endcomment %}
-        <div class="ml-10 mr-5 md:ml-50 mt-1">
-          {% comment %}Will implement light/dark mode toggle after js scripts are allowed.{% endcomment %}
-          <i class="fa-solid fa-moon text-black text-4xl"></i>
-        </div>
-      </nav>
-    </header>
-    {% comment %}Profile Page Content{% endcomment %}
-    <main class="w-full mb-20">
-      <div class="max-w-full mx-2 lg:max-w-6xl lg:mx-auto h-full">
-        {% comment %}Hero Section{% endcomment %}
-        <section class="flex flex-col lg:flex-row justify-center items-center h-screen outline-yellow-500">
-          <p class="text-4xl font-bold ml-20 mb-10 mt-20 lg:mb-50">
-            <span class="text-primary-100 inline-block animate-fade-in-down animate-blur">Halo!</span> I'm
-            <br />
-            <span class="font-inter font-bold text-6xl">{{ name }}</span>
-            <br />
-            a <span class="font-light text-red-500">Computer</span> <span class="font-light text-blue-500">Science</span> student
-            <br />
-            at <span class="font-light text-yellow-500">Universitas Indonesia</span>
-          </p>
-          <div class="group relative w-full lg:w-1/2 h-full animate-fade-in-up animate-blur">
-            <img src="{% static 'home/img/me_standing.webp' %}"
-                 alt="{{ nick }}"
-                 width="500"
-                 height="500"
-                 class="absolute w-full h-full object-contain object-center inset-0 transition-opacity duration-300 group-hover:opacity-0 hidden lg:block" />
-            <img src="{% static 'home/img/me_posed.webp' %}"
-                 alt="{{ nick }} Hover"
-                 width="500"
-                 height="500"
-                 class="absolute w-full h-full object-contain object-center inset-0 transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100" />
-          </div>
-        </section>
-        {% comment %}Section Separator{% endcomment %}
-        <div class="bg-tertiary-600 w-full h-0.5 rounded-full my-10"></div>
-        {% comment %}About Me Section{% endcomment %}
-        <section class="flex flex-col items-center w-full">
-          <p class="text-center text-2xl font-bold mb-10">
-            what you should know.
-            <br />
-            <span class="text-sm text-secondary-100 italic">about me</span>
-          </p>
-          {% comment %}Student Card Mock{% endcomment %}
-          <div class="relative flex items-center bg-neutral-200 w-80 h-40 lg:w-100 lg:h-50 rounded-lg drop-shadow-2xl gap-10 px-5 mb-20 hover:-translate-y-2 transition-transform ease-in-out duration-300">
-            <img src="{% static 'home/img/ui.webp' %}"
-                 alt="Universitas Indonesia Logo"
+      </section>
+      {% comment %}Section Separator{% endcomment %}
+      <div class="bg-tertiary-600 w-full h-0.5 rounded-full my-10"></div>
+      {% comment %}About Me Section{% endcomment %}
+      <section class="flex flex-col items-center w-full">
+        <p class="text-center text-2xl font-bold mb-10">
+          what you should know.
+          <br />
+          <span class="text-sm text-secondary-100 italic">about me</span>
+        </p>
+        {% comment %}Student Card Mock{% endcomment %}
+        <div class="relative flex items-center bg-neutral-200 w-80 h-40 lg:w-100 lg:h-50 rounded-lg drop-shadow-2xl gap-10 px-5 mb-20 hover:-translate-y-2 transition-transform ease-in-out duration-300">
+          <img src="{% static 'home/img/ui.webp' %}"
+               alt="Universitas Indonesia Logo"
+               width="100"
+               height="100"
+               class="absolute top-5 right-5 opacity-50 -z-1" />
+          <div>
+            <img src="{% static 'home/img/cat.webp' %}"
+                 alt="Student"
                  width="100"
-                 height="100"
-                 class="absolute top-5 right-5 opacity-50 -z-1" />
-            <div>
-              <img src="{% static 'home/img/cat.webp' %}"
-                   alt="Student"
-                   width="100"
-                   height="100" />
-            </div>
-            <p class="text-lg lg:text-2xl">
-              <span class="font-bold">{{ npm }}</span>
+                 height="100" />
+          </div>
+          <p class="text-lg lg:text-2xl">
+            <span class="font-bold">{{ npm }}</span>
+            <br />
+            <span class="mt-2 text-sm/tight lg:text-xl/tight">
+              {{ name }}
               <br />
-              <span class="mt-2 text-sm/tight lg:text-xl/tight">
-                {{ name }}
-                <br />
-                {{ study_program }}
-              </span>
-            </p>
-            {% comment %}Yellow Line{% endcomment %}
-            <div class="absolute bottom-0 left-0 right-0 h-3 bg-yellow-300 rounded-b-lg"></div>
-          </div>
-          <p class="max-w-xs lg:max-w-lg font-semibold text-lg">{{ bio }}</p>
-        </section>
-        <div class="bg-secondary-100 w-1/2 h-0.5 rounded-full mt-10 mb-5 mx-auto"></div>
-        {% comment %}My Interests Section{% endcomment %}
-        <section class="flex flex-col items-center w-full">
-          <p class="text-center font-bold mb-5">
-            <span class="text-sm text-secondary-100 italic">my interests</span>
+              {{ study_program }}
+            </span>
           </p>
-          <p class="text-center font-bold text-4xl mb-10">I'm interested in</p>
-          <div class="flex flex-col bg-linear-to-b from-primary-800 to-tertiary-800 rounded-2xl w-100 h-20 justify-center text-neutral-100 text-center font-bold text-4xl overflow-hidden">
-            <div class="animate-scroll-interests flex flex-col w-full">
-              {% for interest in interests %}
-                <p class="h-20 flex items-center justify-center shrink-0">{{ interest }}</p>
-              {% endfor %}
-            </div>
-          </div>
-        </section>
-        <div class="bg-secondary-100 w-1/2 h-0.5 rounded-full mt-10 mb-5 mx-auto"></div>
-        {% comment %}Experience and Competitions Section{% endcomment %}
-        <section class="flex flex-col items-center w-full">
-          <p class="text-center font-bold mb-5">
-            <span class="text-sm text-secondary-100 italic">what I'm proud of</span>
-          </p>
-          <ul class="flex flex-col bg-linear-to-b from-primary-800 to-secondary-600 rounded-2xl w-full md:w-125 py-6 px-4 justify-center text-neutral-100 text-center font-semibold text-md lg:text-2xl divide-y-2 divide-neutral-300">
-            {% for exp in experience_truncated %}
-              <li class="py-4">{{ exp }}</li>
+          {% comment %}Yellow Line{% endcomment %}
+          <div class="absolute bottom-0 left-0 right-0 h-3 bg-yellow-300 rounded-b-lg"></div>
+        </div>
+        <p class="max-w-xs lg:max-w-lg font-semibold text-lg">{{ bio }}</p>
+      </section>
+      <div class="bg-secondary-100 w-1/2 h-0.5 rounded-full mt-10 mb-5 mx-auto"></div>
+      {% comment %}My Interests Section{% endcomment %}
+      <section class="flex flex-col items-center w-full">
+        <p class="text-center font-bold mb-5">
+          <span class="text-sm text-secondary-100 italic">my interests</span>
+        </p>
+        <p class="text-center font-bold text-4xl mb-10">I'm interested in</p>
+        <div class="flex flex-col bg-linear-to-b from-primary-800 to-tertiary-800 rounded-2xl w-100 h-20 justify-center text-neutral-100 text-center font-bold text-4xl overflow-hidden">
+          <div class="animate-scroll-interests flex flex-col w-full">
+            {% for interest in interests %}
+              <p class="h-20 flex items-center justify-center shrink-0">{{ interest }}</p>
             {% endfor %}
-          </ul>
-        </section>
-      </div>
-    </main>
-    {% comment %}Footer{% endcomment %}
-    <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-light px-5 gap-4 text-xs lg:text-xl">
-      <p class="flex items-center gap-2">
-        <i class="fa-solid fa-copyright"></i>
-        <span>2026 {{ name }}, All Rights Reserved.</span>
-      </p>
-      {% comment %}Vertical Line Separator{% endcomment %}
-      <div class="w-1 h-full bg-primary-100 lg:mx-3"></div>
-      {% comment %}Page Links{% endcomment %}
-      <ul class="flex h-full justify-center flex-col gap-2 text-sm font-bold">
-        <li>
-          <a href="{% url 'home:home' %}" class="hover:text-tertiary-100">profile</a>
-        </li>
-        <li>
-          {% comment %}Will implement after pages are allowed{% endcomment %}
-          <a href="" class="hover:text-tertiary-100">projects</a>
-        </li>
-        <li>
-          <a href="{% url 'home:experience' %}" class="hover:text-tertiary-100">experience</a>
-        </li>
-      </ul>
-      {% comment %}Social Media{% endcomment %}
-      <div class="flex flex-col ml-auto text-primary-100 gap-2">
-        <ul class="flex ml-auto gap-2">
-          <li>
-            <a href="https://github.com/JocimSus"><i class="fa-brands fa-square-github text-4xl"></i></a>
-          </li>
-          <li>
-            <a href="https://linkedin.com/in/joachim-susatiyo-049339292"><i class="fa-brands fa-linkedin text-4xl"></i></a>
-          </li>
+          </div>
+        </div>
+      </section>
+      <div class="bg-secondary-100 w-1/2 h-0.5 rounded-full mt-10 mb-5 mx-auto"></div>
+      {% comment %}Experience and Competitions Section{% endcomment %}
+      <section class="flex flex-col items-center w-full">
+        <p class="text-center font-bold mb-5">
+          <span class="text-sm text-secondary-100 italic">what I'm proud of</span>
+        </p>
+        <ul class="flex flex-col bg-linear-to-b from-primary-800 to-secondary-600 rounded-2xl w-full md:w-125 py-6 px-4 justify-center text-neutral-100 text-center font-semibold text-md lg:text-2xl divide-y-2 divide-neutral-300">
+          {% for exp in experience_truncated %}
+            <li class="py-4">{{ exp }}</li>
+          {% endfor %}
         </ul>
-        <span class="mr-2">
-          joachim.susatiyo[at]ui.ac.id
-          <i class="fa-solid fa-envelope !hidden lg:!inline-block"></i>
-        </span>
-      </div>
-    </footer>
-  </body>
-</html>
+      </section>
+    </div>
+  </main>
+{% endblock %}
