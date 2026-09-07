@@ -34,3 +34,7 @@ class Experience(models.Model):
     @property
     def is_ongoing(self):
         return self.end_date is None
+
+    @property
+    def get_category_display(self):
+        return dict(self.EXPERIENCE_TYPE_CHOICES).get(self.experience_type, "Unknown")
