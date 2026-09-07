@@ -12,6 +12,7 @@ Kelas: PBP D
 ## Architecture Overview
 
 Django MVT project with PostgreSQL and containerized development/production deployment.
+Uses service selector structure popularized by [Hacksoft](https://github.com/redkoolaidplz/HackSoft-Django-Styleguide) to interact with models.
 
 ### Tech Stack
 
