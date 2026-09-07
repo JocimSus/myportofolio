@@ -5,7 +5,7 @@ from .selectors import get_all_experiences_by_start_date
 
 
 # Create your views here.
-def home(req: HttpRequest) -> HttpResponse:
+def profile(req: HttpRequest) -> HttpResponse:
     ctx = {
         "name": "Joachim Susatiyo",
         "nick": "Joachim",
@@ -29,7 +29,7 @@ def home(req: HttpRequest) -> HttpResponse:
         ],
     }
 
-    return render(req, "home/home.html", ctx)
+    return render(req, "home/profile.html", ctx)
 
 
 def experience(req: HttpRequest) -> HttpResponse:

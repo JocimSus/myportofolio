@@ -43,7 +43,7 @@
         {% comment %}Nav Links{% endcomment %}
         <ul class="flex flex-row gap-5">
           <li>
-            <a href="{% url 'home:home' %}"
+            <a href="{% url 'home:profile' %}"
                class="{% if request.path == '/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
               profile
             </a>
@@ -74,7 +74,7 @@
       {% comment %}Page Links{% endcomment %}
       <ul class="py-2 grid-flow-col grid-rows-3 items-center h-full justify-center text-sm font-bold hidden lg:grid">
         <li>
-          <a href="{% url 'home:home' %}" class="hover:text-tertiary-100">profile</a>
+          <a href="{% url 'home:profile' %}" class="hover:text-tertiary-100">profile</a>
         </li>
         <li>
           <a href="{% url 'home:experience' %}" class="hover:text-tertiary-100">experience</a>
