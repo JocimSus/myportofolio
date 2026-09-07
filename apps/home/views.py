@@ -1,18 +1,18 @@
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
-from .models import Experience
+from .selectors import get_all_experiences_by_start_date
 
 
 # Create your views here.
-def home(req: HttpRequest) -> HttpResponse:
+def profile(req: HttpRequest) -> HttpResponse:
     ctx = {
         "name": "Joachim Susatiyo",
         "nick": "Joachim",
         "npm": "2506602694",
         "study_program": "Ilmu Komputer - S1",
         "bio": (
-            "a passionate computer science student at Universitas Indonesia."
+            "a passionate computer science student at Universitas Indonesia. "
             "I love exploring new technologies and applying them to solve real-world problems."
         ),
         "interests": [
@@ -29,14 +29,14 @@ def home(req: HttpRequest) -> HttpResponse:
         ],
     }
 
-    return render(req, "home/home.html", ctx)
+    return render(req, "home/profile.html", ctx)
 
 
 def experience(req: HttpRequest) -> HttpResponse:
     ctx = {
         "name": "Joachim Susatiyo",
         "nick": "Joachim",
-        "experiences": Experience.objects.all(),
+        "experiences": get_all_experiences_by_start_date(),
     }
 
     return render(req, "home/experience.html", ctx)
