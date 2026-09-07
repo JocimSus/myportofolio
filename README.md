@@ -9,6 +9,29 @@ NPM: 2506602694
 
 Kelas: PBP D
 
+## Development Setup
+There are two ways to run this application.
+
+### Prerequisites
+* Python 3.13+
+* `uv` or `pip`
+
+### Option 1: Using `uv`
+```bash
+uv sync
+uv run python manage.py migrate
+uv run python manage.py tailwind dev
+```
+
+### Option 2: using `pip`
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py tailwind dev
+```
+
 ## Architecture Overview
 
 Django MVT project with PostgreSQL and containerized development/production deployment.
