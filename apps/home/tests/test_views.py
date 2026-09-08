@@ -5,7 +5,22 @@ from django.utils import timezone
 from ..models import Experience
 
 
-class HomeViewTest(TestCase):
+class ProfileViewTest(TestCase):
+    def test_profile_url_is_accessible(self):
+        response = self.client.get(reverse("home:profile"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "home/profile.html")
+        self.assertContains(response, "profile")
+        self.assertContains(response, f'href="{reverse("home:experience")}"')
+
+    def test_nonexistent_page_returns_404(self):
+        response = self.client.get("/halaman-yang-tidak-ada/")
+
+        self.assertEqual(response.status_code, 404)
+
+
+class ExperienceViewTest(TestCase):
     def setUp(self):
         self.experience = Experience.objects.create(
             title="Asisten Dosen PBP",
