@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from ..models import Experience
+from ..models import Experience, Project
 
 
 class ExperienceModelTest(TestCase):
@@ -26,3 +26,26 @@ class ExperienceModelTest(TestCase):
         self.experience.save()
 
         self.assertFalse(self.experience.is_ongoing)
+
+
+class ProjectModelTest(TestCase):
+    def setUp(self):
+        self.project = Project.objects.create(
+            title="My Project",
+            description="Sample project.",
+            category="website",
+            technologies=["Django", "React"],
+            project_url="https://github.com",
+        )
+
+    def test_project_str(self):
+        self.assertEqual(str(self.project), "My Project")
+
+    def test_project_category(self):
+        self.assertEqual(self.project.category, "website")
+
+    def test_project_technologies(self):
+        self.assertEqual(self.project.technologies, ["Django", "React"])
+
+    def test_project_url(self):
+        self.assertEqual(self.project.project_url, "https://github.com")
