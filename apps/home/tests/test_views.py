@@ -29,12 +29,12 @@ class ExperienceViewTest(TestCase):
             start_date=timezone.now(),
         )
 
-    def test_profile_url_is_accessible(self):
-        response = self.client.get(reverse("home:profile"))
+    def test_experience_url_is_accessible(self):
+        response = self.client.get(reverse("home:experience"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "home/profile.html")
-        self.assertNotContains(response, self.experience.title)
+        self.assertTemplateUsed(response, "home/experience.html")
+        self.assertContains(response, self.experience.title)
         self.assertContains(response, f'href="{reverse("home:experience")}"')
 
     def test_nonexistent_page_returns_404(self):
