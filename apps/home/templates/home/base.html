@@ -55,6 +55,12 @@
               experience
             </a>
           </li>
+          <li>
+            <a href="{% url 'home:projects' %}"
+               class="{% if request.path == '/projects/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
+              projects
+            </a>
+          </li>
         </ul>
         {% comment %}Tailing Nav Decor (Desktop){% endcomment %}
         <div class="hidden md:block md:ml-50 mt-1">
@@ -83,6 +89,10 @@
            class="px-4 py-2 rounded-xl text-lg transition-colors {% if request.path == '/experience/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
           experience
         </a>
+        <a href="{% url 'home:projects' %}"
+           class="px-4 py-2 rounded-xl text-lg transition-colors {% if request.path == '/projects/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
+          projects
+        </a>
       </div>
     </header>
     {% block content %}{% endblock %}
@@ -101,6 +111,9 @@
         </li>
         <li>
           <a href="{% url 'home:experience' %}" class="hover:text-tertiary-100">experience</a>
+        </li>
+        <li>
+          <a href="{% url 'home:projects' %}" class="hover:text-tertiary-100">projects</a>
         </li>
       </ul>
       {% comment %}Social Media{% endcomment %}

@@ -12,3 +12,10 @@ class ExperienceType(models.TextChoices):
     ORGANIZATION = "organization", "Organization"
     COMMITTEE = "committee", "Committee"
     COMMUNITY = "community", "Community"
+
+
+class ProjectType(models.TextChoices):
+    WEBSITE = "website", "Website"
+    MOBILE_APP = "mobile-app", "Mobile App"
+    AI = "ai", "AI"
+    CONTRIBUTION = "contribution", "Contribution"
