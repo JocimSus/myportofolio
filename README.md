@@ -32,6 +32,13 @@ python manage.py migrate
 python manage.py tailwind dev
 ```
 
+### Setup Data
+Add your own data by first running this command:
+```bash
+python manage.py createsuperuser 
+```
+then, login to the admin dashboard on `localhost:8000/admin`.
+
 ## Architecture Overview
 
 Django MVT project with PostgreSQL and containerized development/production deployment.
