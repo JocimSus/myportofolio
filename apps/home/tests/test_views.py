@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from ..models import Experience
+from ..models import Experience, Project
 
 
 class HomeViewTest(TestCase):
@@ -48,7 +48,6 @@ class ExperienceViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "home/experience.html")
-        self.assertContains(response, self.experience.title)
         self.assertContains(response, f'href="{reverse("home:experience")}"')
 
     def test_experience_page(self):
@@ -78,15 +77,34 @@ class ExperienceViewTest(TestCase):
 
 
 class ProjectViewTest(TestCase):
+    def setUp(self):
+        self.project = Project.objects.create(
+            title="My Project",
+            description="Sample project.",
+            category="website",
+            technologies=["Django", "React"],
+            project_url="https://github.com",
+        )
+
+    def test_project_url_is_accessible(self):
+        response = self.client.get(reverse("home:projects"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "home/projects.html")
+        self.assertContains(response, f'href="{reverse("home:profile")}"')
+
     def test_project_page(self):
         response = self.client.get(reverse("home:projects"))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "home/projects.html")
-        self.assertContains(response, "projects")
+        self.assertContains(response, self.project.title)
+        self.assertContains(response, self.project.description)
+        self.assertContains(response, "Website")
         self.assertContains(response, f'href="{reverse("home:profile")}"')
 
     def test_empty_project_page(self):
+        Project.objects.all().delete()
         response = self.client.get(reverse("home:projects"))
 
         self.assertContains(response, "No projects added yet.")
