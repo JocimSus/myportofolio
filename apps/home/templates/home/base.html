@@ -31,17 +31,18 @@
     <div class="absolute inset-0 pointer-events-none opacity-20 bg-repeat -z-10"
          style="background-image: url('{% static 'img/seamless-paper-texture.webp' %}')"></div>
     {% comment %}Navigation Bar{% endcomment %}
-    <header class="w-full">
-      <nav class="flex justify-between lg:justify-center text-2xl md:text-4xl text-primary-800 my-2 items-center">
+    <header class="w-full relative z-40">
+      <nav class="flex justify-between md:justify-center text-2xl md:text-4xl text-primary-800 my-2 items-center px-4 md:px-0">
         {% comment %}Leading Nav Decor{% endcomment %}
-        <div class="mr-10 ml-1 md:mr-50">
+        <div class="md:mr-50">
           <img src="{% static 'home/img/spinning_cube.gif' %}"
                alt="spinning cube"
                width="50"
-               height="50" />
+               height="50"
+               class="select-none pointer-events-none" />
         </div>
-        {% comment %}Nav Links{% endcomment %}
-        <ul class="flex flex-row gap-5">
+        {% comment %}Desktop Nav Links{% endcomment %}
+        <ul class="hidden md:flex flex-row gap-5">
           <li>
             <a href="{% url 'home:profile' %}"
                class="{% if request.path == '/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
@@ -55,12 +56,34 @@
             </a>
           </li>
         </ul>
-        {% comment %}Tailing Nav Decor{% endcomment %}
-        <div class="ml-10 mr-5 md:ml-50 mt-1">
-          {% comment %}Will implement light/dark mode toggle after js scripts are allowed.{% endcomment %}
-          <i class="fa-solid fa-moon text-black text-4xl"></i>
+        {% comment %}Tailing Nav Decor (Desktop){% endcomment %}
+        <div class="hidden md:block md:ml-50 mt-1">
+          <img src="{% static 'home/img/spinning_cube.gif' %}"
+               alt="spinning cube"
+               width="50"
+               height="50"
+               class="select-none pointer-events-none" />
         </div>
+        {% comment %}Burger Menu Button (Mobile){% endcomment %}
+        <button id="menu-toggle"
+                type="button"
+                aria-label="Toggle navigation menu"
+                class="block md:hidden text-3xl focus:outline-none">
+          <i class="fa-solid fa-bars"></i>
+        </button>
       </nav>
+      {% comment %}Burger Menu{% endcomment %}
+      <div id="mobile-menu"
+           class="absolute top-full right-4 w-48 bg-neutral-200 text-primary-800 p-3 rounded-2xl shadow-xl border border-neutral-300 opacity-0 -translate-y-2 pointer-events-none transition-all duration-300 ease-in-out md:hidden flex flex-col gap-2 z-50">
+        <a href="{% url 'home:profile' %}"
+           class="px-4 py-2 rounded-xl text-lg transition-colors {% if request.path == '/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
+          profile
+        </a>
+        <a href="{% url 'home:experience' %}"
+           class="px-4 py-2 rounded-xl text-lg transition-colors {% if request.path == '/experience/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
+          experience
+        </a>
+      </div>
     </header>
     {% block content %}{% endblock %}
     {% comment %}Footer{% endcomment %}
@@ -96,5 +119,33 @@
         </span>
       </div>
     </footer>
+    {% comment %}Mobile Dropdown Toggle Script{% endcomment %}
+    <script>
+      const menuToggle = document.getElementById('menu-toggle')
+      const mobileMenu = document.getElementById('mobile-menu')
+      
+      function toggleMenu() {
+        const isOpen = mobileMenu.classList.contains('opacity-100')
+        if (isOpen) {
+          mobileMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto')
+          mobileMenu.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none')
+        } else {
+          mobileMenu.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none')
+          mobileMenu.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto')
+        }
+      }
+      
+      menuToggle.addEventListener('click', (e) => {
+        e.preventDefault()
+        toggleMenu()
+      })
+      
+      document.addEventListener('click', (e) => {
+        if (!mobileMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+          mobileMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto')
+          mobileMenu.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none')
+        }
+      })
+    </script>
   </body>
 </html>
