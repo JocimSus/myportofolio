@@ -21,6 +21,18 @@ class ProfileViewTest(TestCase):
         self.assertContains(response, "profile")
         self.assertContains(response, f'href="{reverse("home:experience")}"')
 
+    def test_profile_page(self):
+        response = self.client.get(reverse("home:profile"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "home/profile.html")
+        self.assertContains(response, "Joachim Susatiyo")
+        self.assertContains(response, "Ilmu Komputer - S1")
+        self.assertContains(
+            response, "a passionate computer science student at Universitas Indonesia."
+        )
+        self.assertContains(response, f'href="{reverse("home:experience")}"')
+
 
 class ExperienceViewTest(TestCase):
     def setUp(self):
