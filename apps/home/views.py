@@ -34,8 +34,6 @@ def profile(req: HttpRequest) -> HttpResponse:
 
 def experience(req: HttpRequest) -> HttpResponse:
     ctx = {
-        "name": "Joachim Susatiyo",
-        "nick": "Joachim",
         "experiences": get_all_experiences_by_start_date(),
     }
 
