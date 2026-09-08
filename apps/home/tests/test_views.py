@@ -66,3 +66,18 @@ class ExperienceViewTest(TestCase):
 
         self.assertContains(response, "Completed")
         self.assertNotContains(response, "Ongoing")
+
+
+class ProjectViewTest(TestCase):
+    def test_project_page(self):
+        response = self.client.get(reverse("home:projects"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "home/projects.html")
+        self.assertContains(response, "projects")
+        self.assertContains(response, f'href="{reverse("home:profile")}"')
+
+    def test_empty_project_page(self):
+        response = self.client.get(reverse("home:projects"))
+
+        self.assertContains(response, "No projects added yet.")
