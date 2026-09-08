@@ -5,6 +5,13 @@ from django.utils import timezone
 from ..models import Experience
 
 
+class HomeViewTest(TestCase):
+    def test_nonexistent_page_returns_404(self):
+        response = self.client.get("/halaman-yang-tidak-ada/")
+
+        self.assertEqual(response.status_code, 404)
+
+
 class ProfileViewTest(TestCase):
     def test_profile_url_is_accessible(self):
         response = self.client.get(reverse("home:profile"))
@@ -13,11 +20,6 @@ class ProfileViewTest(TestCase):
         self.assertTemplateUsed(response, "home/profile.html")
         self.assertContains(response, "profile")
         self.assertContains(response, f'href="{reverse("home:experience")}"')
-
-    def test_nonexistent_page_returns_404(self):
-        response = self.client.get("/halaman-yang-tidak-ada/")
-
-        self.assertEqual(response.status_code, 404)
 
 
 class ExperienceViewTest(TestCase):
@@ -36,11 +38,6 @@ class ExperienceViewTest(TestCase):
         self.assertTemplateUsed(response, "home/experience.html")
         self.assertContains(response, self.experience.title)
         self.assertContains(response, f'href="{reverse("home:experience")}"')
-
-    def test_nonexistent_page_returns_404(self):
-        response = self.client.get("/halaman-yang-tidak-ada/")
-
-        self.assertEqual(response.status_code, 404)
 
     def test_experience_page(self):
         response = self.client.get(reverse("home:experience"))
