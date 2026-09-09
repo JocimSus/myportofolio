@@ -32,9 +32,17 @@ python manage.py migrate
 python manage.py tailwind dev
 ```
 
+### Setup Data
+Add your own data by first running this command:
+```bash
+python manage.py createsuperuser 
+```
+then, login to the admin dashboard on `localhost:8000/admin`.
+
 ## Architecture Overview
 
 Django MVT project with PostgreSQL and containerized development/production deployment.
+Uses service selector structure popularized by [Hacksoft](https://github.com/redkoolaidplz/HackSoft-Django-Styleguide) to interact with models.
 
 ### Tech Stack
 
@@ -79,3 +87,24 @@ Saya menggunakan Chatbot Google Gemini selama proses programming fitur untuk mem
 3. Membantu menyiapkan keyframes dalam melakukan animasi scrolling menggunakan tailwind css.
 
 Keterbatasan AI sempat saya rasakan ketika beberapa fitur yang disarankan tidak sesuai dengan visi saya. AI tidak memiliki "mata" untuk melihat tampilan sebuah halaman seperti seorang manusia. Oleh karena itu, sering terjadi kesalahan saat melakukan styling, seperti saat animasi scrolling, dan centering beberapa elemen. Saya sendiri harus mengoreksi hampir semua fitur yang dibantu oleh AI, seperti permasalahan flexbox dan coloring. Namun, AI sangat berguna dalam menyelesaikan tugas repetitif seperti menyiapkan data hardcoded pada fitur scrolling saya.
+
+### Tugas 2
+1. Alur request hingga response saat user membuka halaman portofolio baru sebagai berikut.
+  - request: user meng-klik tombol navigasi pada salah satu halaman di website, misalnya: `projects`.
+  - `urls.py` (project): django menerima HTTP Request melalui `urls` proyek. File ini memeriksa request url dan membaca setiap route yang tersedia pada file urls. Kemudian, django meneruskan penanganan request ke `urls` milik aplikasi melalui fungsi `include`.
+  - `urls.py` (app): urls milik aplikasi mencocokkan URL dengan `view` yang sesuai untuk menangani halaman tersebut.
+  - `views.py`: view memroses logika bisnis. Mulai dari meminta data portofolio dari model hingga pengolahan data untuk dimasukkan ke dalam context halaman dan kemudian akan ditampilkan melalui fungsi `render()`.
+  - `models.py`: model melakukan query ke database, seperti `Project.objects.all()` untuk mengambil data portofolio yang tersimpan, lalu mengembalikan data tersebut ke view.
+  - template : django template engine menggabungkan struktur HTML dengan data dari context menggunakan sintaks Django Template Language (DTL).
+  - response: hasil akhir berupa dokumen HTML hasil gabungan data yang sudah diproses dikirimkan ke browser user untuk ditampilkan.
+2. Data portofolio sebaiknya disimpan dalam suatu model karena hal berikut.
+  - separation of concerns: memisahkan fungsi dan data dari tampilan. Fungsi suatu halaman ditulis dalam view aplikasi, dan penyimpanan serta deklarasi data disimpan pada suatu model sehingga tidak terjadi pengulangan deklarasi data.
+  - maintainability: menambah, mengedit, atau menghapus data pada projek atau aplikasi tidak memerlukan perubahan kode, commit git, ataupun deployment ulang server. Karena dapat melakukan pembaruan data melalui halaman admin atau interface lainnya.
+  - scalability: apabila nanti portofolio memiliki ratusan hingga ribuan data yang dapat berubah, template cukup menggunakan satu perulangan tanpa perlu menulis elemen HTML berkali-kali.
+3. Fungsi `makemigrations` adalah untuk mendeteksi perubahan model dan membuat file migrasi dalam bentuk script python, baik untuk memanipulasi data ataupun membuat definisi data yang baru. Sedangkan, fungsi `migrate` untuk menerapkan script migrasi python yang sudah dibuat melalui command `makemigrations` sebelumnya. Saya mengubah salah satu kolom pada model `Experience` dan menambahkan model `Project` yang baru untuk menyimpan semua projek saya. Saat mengubah salah satu kolom, saya melakukan perubahan pada file `models.py` terlebih dahulu, lalu melakukan `makemigrations` (`0002_rename_experience_type_experience_category.py`) dan kemudian melakukan `migrate`. Alur yang sama terjadi juga ketika saya menambahkan model `Project` yang baru hanya saja saya membuat class model baru. Semua migrasi data dilakukan oleh script kepada database seperti PostgreSQL ataupun SQLite.
+
+#### AI Disclosure
+Saya menggunakan Chatbot Google Gemini dan ChatGPT selama proses programming untuk membantu dalam hal berikut. Chat Logs: [https://docs.google.com/document/d/1rD72sG6wP-SsP1-JLVWpy-S9herYrWJCqkQsDDLfAwU/edit?usp=sharing](https://docs.google.com/document/d/1rD72sG6wP-SsP1-JLVWpy-S9herYrWJCqkQsDDLfAwU/edit?usp=sharing)
+1. Membantu saya dalam melakukan research mengenai best practices dalam menstruktur templates dalam bahasa templating django.
+2. Membantu saya dalam melakukan perbaikan pada animasi css untuk meningkatkan interaktibilitas website.
+3. Membantu saya dalam melakukan refactor pada test cases tutorial.

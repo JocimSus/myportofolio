@@ -1,132 +1,39 @@
-{% load static tailwind_tags %}
+{% extends 'home/base.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    {% comment %}Meta Tags{% endcomment %}
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="{{ nick }}'s personal portofolio website" />
-    <title>{{ nick }} - Portofolio</title>
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}" />
-    {% comment %}Google Fonts{% endcomment %}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-          rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-          rel="stylesheet" />
-    {% comment %}Font Awesome{% endcomment %}
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer" />
-    {% comment %}Styles{% endcomment %}
-    <link rel="stylesheet" href="{% static 'home/css/style.css' %}" />
-    {% tailwind_css %}
-  </head>
-  <body class="relative">
-    {% comment %}Background Texture{% endcomment %}
-    <div class="absolute inset-0 pointer-events-none opacity-10 bg-repeat -z-10"
-         style="background-image: url('{% static 'img/seamless-paper-texture.webp' %}')"></div>
-    {% comment %}Navigation Bar{% endcomment %}
-    <header class="w-full">
-      <nav class="flex justify-between lg:justify-center text-2xl md:text-4xl text-primary-800 my-2 items-center">
-        {% comment %}Leading Nav Decor{% endcomment %}
-        <div class="mr-10 ml-1 md:mr-50">
-          <img src="{% static 'home/img/spinning_cube.gif' %}"
-               alt="spinning cube"
-               width="50"
-               height="50" />
-        </div>
-        {% comment %}Nav Links{% endcomment %}
-        <ul class="flex flex-row gap-5">
-          <li>
-            <a href="{% url 'home:home' %}"
-               class="{% if request.path == '/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
-              profile
-            </a>
-          </li>
-          <li>
-            {% comment %}Will implement after pages are allowed{% endcomment %}
-            <a href="" class="hover:text-tertiary-100">projects</a>
-          </li>
-          <li>
-            <a href="{% url 'home:experience' %}"
-               class="{% if request.path == '/experience/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
-              experience
-            </a>
-          </li>
-        </ul>
-        {% comment %}Tailing Nav Decor{% endcomment %}
-        <div class="ml-10 mr-5 md:ml-50 mt-1">
-          {% comment %}Will implement light/dark mode toggle after js scripts are allowed.{% endcomment %}
-          <i class="fa-solid fa-moon text-black text-4xl"></i>
-        </div>
-      </nav>
-    </header>
-    {% comment %}Experience Page Content{% endcomment %}
-    <main class="w-full mb-20 min-h-screen">
-      <section class="experience-section" id="experience">
-        <div class="container">
-          <p class="section-kicker">Perjalanan saya sejauh ini</p>
-          <h1>Experience</h1>
-          <div class="experience-grid">
-            {% for experience in experiences %}
-              <article class="experience-card">
-                <span class="experience-category">{{ experience.get_category_display }}</span>
-                <h2>{{ experience.title }}</h2>
-                <p class="experience-description">{{ experience.description }}</p>
-                {% if experience.is_ongoing %}
-                  <p class="experience-status">Sedang berlangsung</p>
-                {% else %}
-                  <p class="experience-status">Selesai</p>
-                {% endif %}
-              </article>
-            {% empty %}
-              <p class="empty-state">Belum ada pengalaman yang ditambahkan.</p>
-            {% endfor %}
-          </div>
-        </div>
-      </section>
-    </main>
-    {% comment %}Footer{% endcomment %}
-    <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-light px-5 gap-4 text-xs lg:text-xl">
-      <p class="flex items-center gap-2">
-        <i class="fa-solid fa-copyright"></i>
-        <span>2026 {{ name }}, All Rights Reserved.</span>
-      </p>
-      {% comment %}Vertical Line Separator{% endcomment %}
-      <div class="w-1 h-full bg-primary-100 lg:mx-3"></div>
-      {% comment %}Page Links{% endcomment %}
-      <ul class="flex h-full justify-center flex-col gap-2 text-sm font-bold">
-        <li>
-          <a href="{% url 'home:home' %}" class="hover:text-tertiary-100">profile</a>
-        </li>
-        <li>
-          {% comment %}Will implement after pages are allowed{% endcomment %}
-          <a href="" class="hover:text-tertiary-100">projects</a>
-        </li>
-        <li>
-          <a href="{% url 'home:experience' %}" class="hover:text-tertiary-100">experience</a>
-        </li>
-      </ul>
-      {% comment %}Social Media{% endcomment %}
-      <div class="flex flex-col ml-auto text-primary-100 gap-2">
-        <ul class="flex ml-auto gap-2">
-          <li>
-            <a href="https://github.com/JocimSus"><i class="fa-brands fa-square-github text-4xl"></i></a>
-          </li>
-          <li>
-            <a href="https://linkedin.com/in/joachim-susatiyo-049339292"><i class="fa-brands fa-linkedin text-4xl"></i></a>
-          </li>
-        </ul>
-        <span class="mr-2">
-          joachim.susatiyo[at]ui.ac.id
-          <i class="fa-solid fa-envelope !hidden lg:!inline-block"></i>
-        </span>
+{% block content %}
+  <main class="w-full mb-20 min-h-screen max-w-6xl mx-auto">
+    {% comment %} Experience Section {% endcomment %}
+    <section class="flex flex-col justify-center items-center py-20">
+      <h1 class="text-4xl font-bold">my experience.</h1>
+      <div class="bg-tertiary-600 w-3/4 h-0.5 rounded-full my-10"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 justify-items-center w-full max-w-4xl px-4">
+        {% for exp in experiences %}
+          <article class="group relative z-10 hover:z-30 bg-neutral-300 w-full max-w-md lg:only:col-span-2 p-4 drop-shadow-2xl rounded-xl transition-transform hover:scale-105 duration-300 ease-in-out h-full flex flex-col">
+            <div class="flex">
+              <span class="text-sm font-light">{{ exp.get_category_display }}</span>
+            </div>
+            <h2 class="font-semibold text-xl">{{ exp.title }}</h2>
+            <p class="text-sm mt-2 grow">{{ exp.description }}</p>
+            {% if exp.is_ongoing %}
+              <p class="text-sm font-light mt-4">Ongoing</p>
+            {% else %}
+              <p class="text-sm font-light mt-4">Completed on {{ exp.end_date }}</p>
+            {% endif %}
+            {% comment %} Hover Thumbnail Dropdown {% endcomment %}
+            {% if exp.thumbnail %}
+              <div class="absolute left-0 top-full mt-2 z-30 w-full opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300 bg-neutral-200 p-2 rounded-xl shadow-xl">
+                <img src="{{ exp.thumbnail }}"
+                     alt="{{ exp.title }}"
+                     width="250"
+                     height="150"
+                     class="w-full h-auto rounded-lg object-cover" />
+              </div>
+            {% endif %}
+          </article>
+        {% empty %}
+          <p class="text-center font-light text-primary-100 col-span-full">No experiences added yet.</p>
+        {% endfor %}
       </div>
-    </footer>
-  </body>
-</html>
+    </section>
+  </main>
+{% endblock %}
