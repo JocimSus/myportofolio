@@ -80,6 +80,7 @@ class ProjectViewTest(TestCase):
     def setUp(self):
         self.project = Project.objects.create(
             title="My Project",
+            slug="my-project",
             description="Sample project.",
             category="website",
             technologies=["Django", "React"],
@@ -101,10 +102,36 @@ class ProjectViewTest(TestCase):
         self.assertContains(response, self.project.title)
         self.assertContains(response, self.project.description)
         self.assertContains(response, "Website")
-        self.assertContains(response, f'href="{reverse("home:profile")}"')
+        self.assertContains(
+            response,
+            f'href="{reverse("home:project_detail", args=[self.project.slug])}"',
+        )
 
     def test_empty_project_page(self):
         Project.objects.all().delete()
+
         response = self.client.get(reverse("home:projects"))
 
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No projects added yet.")
+
+    def test_project_detail_page(self):
+        response = self.client.get(
+            reverse("home:project_detail", args=[self.project.slug])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "home/project_detail.html")
+        self.assertContains(response, self.project.title)
+        self.assertContains(response, self.project.description)
+        self.assertContains(response, "Django")
+        self.assertContains(response, "React")
+        self.assertContains(response, "Website")
+        self.assertContains(response, self.project.project_url)
+
+    def test_project_detail_page_not_found(self):
+        response = self.client.get(
+            reverse("home:project_detail", args=["does-not-exist"])
+        )
+
+        self.assertEqual(response.status_code, 404)
