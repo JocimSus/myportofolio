@@ -26,19 +26,15 @@
             {% if project.technologies %}
               <div class="flex flex-wrap gap-2 my-4">
                 {% for tech in project.technologies %}
-                  <span class="text-xs font-semibold px-3 py-1 bg-tertiary-100 text-neutral-100 rounded-full shadow-sm">{{ tech }}</span>
+                  <span class="text-xs font-semibold px-3 py-1 bg-tertiary-100 text-neutral-100 rounded-full shadow-sm">{{ tech.name }}</span>
                 {% endfor %}
               </div>
             {% endif %}
-            {% if project.project_url %}
-              <button class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out pointer-events-auto">
-                <i class="fa-solid fa-link text-neutral-200"></i>
-                <a href="{{ project.project_url }}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="text-neutral-200 text-lg font-bold font-inter">View Project</a>
-              </button>
-            {% endif %}
+            <a href="{% url 'home:project_detail' project.slug %}"
+               class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit">
+              <i class="fa-solid fa-newspaper text-neutral-200"></i>
+              <span class="text-neutral-200 text-lg font-bold font-inter">View Project</span>
+            </a>
             <div class="absolute bottom-0 left-0 right-0 h-3 bg-secondary-300 rounded-b-lg z-10"></div>
           </article>
         {% empty %}

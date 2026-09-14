@@ -1,5 +1,5 @@
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 from .selectors import get_all_experiences_by_start_date, get_all_projects
 
@@ -46,3 +46,13 @@ def projects(req: HttpRequest) -> HttpResponse:
     }
 
     return render(req, "home/projects.html", ctx)
+
+
+def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
+    project = get_object_or_404(get_all_projects(), slug=slug)
+
+    ctx = {
+        "project": project,
+    }
+
+    return render(req, "home/project_detail.html", ctx)

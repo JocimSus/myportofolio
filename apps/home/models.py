@@ -35,6 +35,7 @@ class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
     description = models.TextField()
     thumbnail = models.URLField(max_length=200, null=True, blank=True)
     project_url = models.URLField(max_length=200, null=True, blank=True)
