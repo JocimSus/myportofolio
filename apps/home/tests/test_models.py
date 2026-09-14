@@ -32,6 +32,7 @@ class ProjectModelTest(TestCase):
     def setUp(self):
         self.project = Project.objects.create(
             title="My Project",
+            slug="my-project",
             description="Sample project.",
             category="website",
             technologies=["Django", "React"],
@@ -40,6 +41,9 @@ class ProjectModelTest(TestCase):
 
     def test_project_str(self):
         self.assertEqual(str(self.project), "My Project")
+
+    def test_project_slug(self):
+        self.assertEqual(self.project.slug, "my-project")
 
     def test_project_category(self):
         self.assertEqual(self.project.category, "website")
