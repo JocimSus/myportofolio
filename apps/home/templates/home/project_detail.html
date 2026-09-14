@@ -1,0 +1,52 @@
+{% extends 'home/base.html' %}
+
+{% load static %}
+
+{% block content %}
+  <main class="w-full mb-20 min-h-screen max-w-xs lg:max-w-3xl mx-auto">
+    <section class="py-20">
+      <a href="{% url 'home:projects' %}">
+        <i class="fa-solid fa-arrow-left mr-2"></i>
+        Back to projects
+      </a>
+      <h1 class="text-5xl font-bold mt-8">{{ project.title }}</h1>
+      {% if project.thumbnail %}
+        <div class="relative my-8 rounded-lg overflow-hidden">
+          <img src="{{ project.thumbnail }}"
+               alt="{{ project.title }}"
+               class="w-full max-h-125 object-cover select-none pointer-events-none" />
+          <div class="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none"></div>
+        </div>
+      {% endif %}
+      <p class="my-4 text-lg font-semibold">{{ project.description }}</p>
+      {% if project.project_url %}
+        <a href="{{ project.project_url }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="flex ml-auto bg-secondary-300 py-5 px-7 rounded-lg items-center gap-2 shadow-xl hover:bg-secondary-400 hover:scale-105 transition-all duration-300 ease-in-out w-fit">
+          <i class="fa-solid fa-link text-neutral-200 text-3xl"></i>
+          <span class="text-neutral-200 text-3xl font-bold font-inter">Go to Project</span>
+        </a>
+      {% endif %}
+      {% if project.technologies %}
+        <section class="relative z-10 w-full my-16 py-8 md:py-12">
+          <div class="mx-auto w-fit max-w-full rounded-2xl bg-white px-5 py-5 text-primary-100 shadow-xl md:rounded-[28px] md:px-10 md:py-7">
+            <h2 class="mb-6 text-center text-2xl font-bold leading-none md:mb-8 md:text-4xl">Frameworks</h2>
+            <div class="grid grid-cols-2 justify-items-center gap-3 md:flex md:max-w-3xl md:flex-wrap md:justify-center md:gap-6">
+              {% for tech in project.technologies %}
+                <div class="flex h-28 w-28 flex-col items-center justify-center rounded-lg border border-primary-100 bg-white px-2 py-3 shadow-[inset_0_2px_10px_rgba(0,0,0,0.14),0_2px_4px_rgba(31,20,92,0.08)] md:h-48 md:w-52 md:rounded-[22px] md:px-6 md:py-7">
+                  {% if tech.icon %}
+                    <img src="{% static tech.icon %}"
+                         alt="{{ tech.name }}"
+                         class="mb-3 h-11 max-w-19 object-contain md:mb-8 md:h-20 md:max-w-37.5" />
+                  {% endif %}
+                  <span class="text-center text-xs font-semibold leading-none text-black md:text-2xl">{{ tech.name }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+      {% endif %}
+    </section>
+  </main>
+{% endblock %}
