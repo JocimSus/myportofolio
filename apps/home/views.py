@@ -1,14 +1,16 @@
+from django.contrib import messages
+from django.core import serializers
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
+from .decorators import require_password
+from .forms import ProjectForm
 from .selectors import get_all_experiences_by_start_date, get_all_projects
 
 
 # Create your views here.
 def profile(req: HttpRequest) -> HttpResponse:
     ctx = {
-        "name": "Joachim Susatiyo",
-        "nick": "Joachim",
         "npm": "2506602694",
         "study_program": "Ilmu Komputer - S1",
         "bio": (
@@ -41,8 +43,15 @@ def experience(req: HttpRequest) -> HttpResponse:
 
 
 def projects(req: HttpRequest) -> HttpResponse:
+    res = get_projects_json(req)
+
+    projects = serializers.deserialize("json", res.content.decode("utf-8"))
+    projects = [project.object for project in projects]
+    title_query = req.GET.get("title", "").strip()
+
     ctx = {
-        "projects": get_all_projects(),
+        "projects": projects,
+        "title_query": title_query,
     }
 
     return render(req, "home/projects.html", ctx)
@@ -56,3 +65,44 @@ def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
     }
 
     return render(req, "home/project_detail.html", ctx)
+
+
+@require_password
+def create_project(req: HttpRequest) -> HttpResponse:
+    form = ProjectForm(req.POST or None)
+
+    if req.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(req, "Proyek baru berhasil ditambahkan!")
+        return redirect("home:projects")
+
+    ctx = {
+        "form": form,
+    }
+    return render(req, "home/projects_form.html", ctx)
+
+
+@require_password
+def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
+    project = get_object_or_404(get_all_projects(), pk=project_id)
+
+    if req.method == "POST":
+        project.delete()
+        messages.success(req, "Project berhasil dihapus!")
+        return redirect("home:projects")
+
+    return redirect("home:projects")
+
+
+# API
+
+
+def get_projects_json(req: HttpRequest) -> HttpResponse:
+    title_query = req.GET.get("title", "").strip()
+    projects = get_all_projects()
+
+    if title_query:
+        projects = projects.filter(title__icontains=title_query)
+
+    projects_json = serializers.serialize("json", projects)
+    return HttpResponse(projects_json, content_type="application/json")

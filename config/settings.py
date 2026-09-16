@@ -35,6 +35,7 @@ CSRF_TRUSTED_ORIGINS = [
 ROOT_URLCONF = os.getenv("DJANGO_ROOT_URLCONF", "config.urls")
 WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "config.wsgi.application")
 PRODUCTION = os.getenv("PRODUCTION", "False").lower() == "true"
+PASSWORD = os.getenv("PASSWORD", "your_password")
 
 # Application definition
 
@@ -77,6 +78,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.home.context_processors.default",
             ],
         },
     },

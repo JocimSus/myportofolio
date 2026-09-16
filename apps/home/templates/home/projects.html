@@ -1,10 +1,35 @@
 {% extends 'home/base.html' %}
 
+{% block meta %}
+  <title>{{ nick }} - Projects</title>
+{% endblock %}
 {% block content %}
   <main class="w-full mb-20 min-h-screen max-w-6xl mx-auto">
     <section class="flex flex-col justify-center items-center py-20">
       <h1 class="text-4xl font-bold">what I've done.</h1>
       <div class="bg-tertiary-600 w-3/4 h-0.5 rounded-full my-10"></div>
+      <div class="flex flex-col w-3/4 mb-10">
+        <form method="get"
+              action="{% url 'home:projects' %}"
+              class="flex gap-2 mb-4 w-full">
+          <input type="search"
+                 id="search-bar"
+                 name="title"
+                 value="{{ title_query }}"
+                 placeholder="Find projects based on name"
+                 aria-label="Find projects based on name"
+                 class="border border-primary-100 px-4 py-2 rounded-lg w-full">
+          <button type="submit"
+                  class="bg-secondary-300 text-neutral-200 py-2 px-3 rounded-lg shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out cursor-pointer">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </form>
+        <a href="{% url "home:create_project" %}"
+           class="ml-auto bg-secondary-300 text-neutral-200 py-2 px-3 rounded-lg shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i>
+          <span class="font-bold">Add Project</span>
+        </a>
+      </div>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {% for project in projects %}
           <article class="relative bg-neutral-200 shadow-xl rounded-lg p-6 mb-4 min-w-75">
@@ -30,15 +55,24 @@
                 {% endfor %}
               </div>
             {% endif %}
-            <a href="{% url 'home:project_detail' project.slug %}"
-               class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit">
-              <i class="fa-solid fa-newspaper text-neutral-200"></i>
-              <span class="text-neutral-200 text-lg font-bold font-inter">View Project</span>
-            </a>
+            <div class="flex gap-2">
+              {% if project.slug %}
+                <a href="{% url 'home:project_detail' project.slug %}"
+                   class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit">
+                  <i class="hidden! md:inline! fa-solid fa-newspaper text-neutral-200"></i>
+                  <span class="text-neutral-200 text-lg font-bold font-inter">View Project</span>
+                </a>
+              {% endif %}
+              {% include "home/components/project_delete_modal.html" with project=project %}
+            </div>
             <div class="absolute bottom-0 left-0 right-0 h-3 bg-secondary-300 rounded-b-lg z-10"></div>
           </article>
         {% empty %}
-          <p class="text-center font-light text-primary-100 col-span-full">No projects added yet.</p>
+          {% if title_query %}
+            <p class="text-center font-light text-primary-100 col-span-full">No projects found for "{{ title_query }}".</p>
+          {% else %}
+            <p class="text-center font-light text-primary-100 col-span-full">No projects added yet.</p>
+          {% endif %}
         {% endfor %}
       </div>
     </section>

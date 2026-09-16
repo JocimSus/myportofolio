@@ -204,3 +204,7 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+.form-w-full div input, 
+.form-w-full div textarea {
+    @apply w-full bg-transparent px-4 py-2.5 border-none outline-none;
+}
