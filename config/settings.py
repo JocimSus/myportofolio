@@ -35,6 +35,7 @@ CSRF_TRUSTED_ORIGINS = [
 ROOT_URLCONF = os.getenv("DJANGO_ROOT_URLCONF", "config.urls")
 WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "config.wsgi.application")
 PRODUCTION = os.getenv("PRODUCTION", "False").lower() == "true"
+PASSWORD = os.getenv("PASSWORD", "your_password")
 
 # Application definition
 
