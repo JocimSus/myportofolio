@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.utils.text import slugify
 
 from .choices import ExperienceType, ProjectType
 
@@ -44,6 +45,11 @@ class Project(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title) + "-" + str(uuid.uuid4())[:8]
+        super().save(*args, **kwargs)
 
     @property
     def get_category_display(self) -> str:
