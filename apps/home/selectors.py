@@ -9,3 +9,10 @@ def get_all_experiences_by_start_date() -> QuerySet[Experience]:
 
 def get_all_projects() -> QuerySet[Project]:
     return Project.objects.all()
+
+
+def get_default_context() -> dict:
+    return {
+        "name": "Joachim Susatiyo",
+        "nick": "Joachim",
+    }

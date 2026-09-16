@@ -6,8 +6,7 @@
     {% comment %}Meta Tags{% endcomment %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Joachim's personal portofolio website" />
-    <title>Joachim - Portofolio</title>
+    <meta name="description" content="{{ nick }}'s personal portofolio website" />
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}" />
     {% comment %}Google Fonts{% endcomment %}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,6 +24,9 @@
     {% comment %}Styles{% endcomment %}
     <link rel="stylesheet" href="{% static 'home/css/style.css' %}" />
     {% tailwind_css %}
+    {% block meta %}
+      <title>{{ nick }} - Portofolio</title>
+    {% endblock %}
   </head>
   <body class="relative">
     {% comment %}Background Texture{% endcomment %}
@@ -100,7 +102,7 @@
     <footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-light px-5 gap-4 text-sm lg:text-xl">
       <p class="flex items-center gap-2">
         <i class="fa-solid fa-copyright"></i>
-        <span>2026 Joachim Susatiyo, All Rights Reserved.</span>
+        <span>2026 {{ name }}, All Rights Reserved.</span>
       </p>
       {% comment %}Vertical Line Separator{% endcomment %}
       <div class="w-1 h-full bg-primary-100 lg:mx-3"></div>
