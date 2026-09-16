@@ -7,8 +7,6 @@ from .selectors import get_all_experiences_by_start_date, get_all_projects
 # Create your views here.
 def profile(req: HttpRequest) -> HttpResponse:
     ctx = {
-        "name": "Joachim Susatiyo",
-        "nick": "Joachim",
         "npm": "2506602694",
         "study_program": "Ilmu Komputer - S1",
         "bio": (
