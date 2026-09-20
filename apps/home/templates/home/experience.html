@@ -14,7 +14,7 @@
         {% for exp in experiences %}
           <article class="py-6 first:pt-0 last:pb-0 flex flex-col md:flex-row items-start gap-4 md:gap-5">
             <div class="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-xl p-0.5 bg-linear-to-br from-primary-100 via-secondary-100 to-tertiary-100 shadow-sm">
-              <div class="w-full h-full rounded-lg overflow-hidden bg-neutral-300 flex items-center justify-center">
+              <div class="w-full h-full rounded-lg overflow-hidden bg-neutral-300 flex items-center justify-center p-2">
                 {% if exp.thumbnail %}
                   <img src="{{ exp.thumbnail }}"
                        alt="{{ exp.title }}"
