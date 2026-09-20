@@ -1,0 +1,36 @@
+{% comment %}Footer{% endcomment %}
+<footer class="w-full flex items-center bg-primary-700 h-25 text-primary-100 font-light px-5 gap-4 text-sm lg:text-xl">
+  <p class="flex items-center gap-2">
+    <i class="fa-solid fa-copyright"></i>
+    <span>2026 {{ name }}, All Rights Reserved.</span>
+  </p>
+  {% comment %}Vertical Line Separator{% endcomment %}
+  <div class="w-1 h-full bg-primary-100 lg:mx-3"></div>
+  {% comment %}Page Links{% endcomment %}
+  <ul class="py-2 grid-flow-col grid-rows-3 items-center h-full justify-center text-lg font-bold hidden lg:grid">
+    <li>
+      <a href="{% url 'home:profile' %}" class="hover:text-tertiary-100">profile</a>
+    </li>
+    <li>
+      <a href="{% url 'home:experience' %}" class="hover:text-tertiary-100">experience</a>
+    </li>
+    <li>
+      <a href="{% url 'home:projects' %}" class="hover:text-tertiary-100">projects</a>
+    </li>
+  </ul>
+  {% comment %}Social Media{% endcomment %}
+  <div class="flex flex-col ml-auto text-primary-100 gap-2">
+    <ul class="flex ml-auto gap-2">
+      <li>
+        <a href="https://github.com/JocimSus"><i class="fa-brands fa-square-github text-4xl"></i></a>
+      </li>
+      <li>
+        <a href="https://linkedin.com/in/joachim-susatiyo-049339292"><i class="fa-brands fa-linkedin text-4xl"></i></a>
+      </li>
+    </ul>
+    <span class="mr-2">
+      joachim.susatiyo[at]ui.ac.id
+      <i class="fa-solid fa-envelope hidden! lg:inline-block!"></i>
+    </span>
+  </div>
+</footer>
