@@ -4,37 +4,56 @@
   <title>{{ nick }} - Experience</title>
 {% endblock %}
 {% block content %}
-  <main class="w-full mb-20 min-h-screen max-w-6xl mx-auto">
+  <main class="w-full mb-20 min-h-screen max-w-4xl mx-auto px-4">
     {% comment %} Experience Section {% endcomment %}
-    <section class="flex flex-col justify-center items-center py-20">
+    <section class="flex flex-col justify-center items-center py-16">
       <h1 class="text-4xl font-bold">my experience.</h1>
-      <div class="bg-tertiary-600 w-3/4 h-0.5 rounded-full my-10"></div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 justify-items-center w-full max-w-4xl px-4">
+      <div class="bg-tertiary-600 w-3/4 h-0.5 rounded-full my-8"></div>
+      {% comment %} Background Container {% endcomment %}
+      <div class="w-full bg-neutral-100 p-6 md:p-8 rounded-2xl shadow-xl divide-y divide-neutral-300">
         {% for exp in experiences %}
-          <article class="group relative z-10 hover:z-30 bg-neutral-300 w-full max-w-md lg:only:col-span-2 p-4 drop-shadow-2xl rounded-xl transition-transform hover:scale-105 duration-300 ease-in-out h-full flex flex-col">
-            <div class="flex">
-              <span class="text-sm font-light">{{ exp.get_category_display }}</span>
-            </div>
-            <h2 class="font-semibold text-xl">{{ exp.title }}</h2>
-            <p class="text-sm mt-2 grow">{{ exp.description }}</p>
-            {% if exp.is_ongoing %}
-              <p class="text-sm font-light mt-4">Ongoing</p>
-            {% else %}
-              <p class="text-sm font-light mt-4">Completed on {{ exp.end_date }}</p>
-            {% endif %}
-            {% comment %} Hover Thumbnail Dropdown {% endcomment %}
-            {% if exp.thumbnail %}
-              <div class="absolute left-0 top-full mt-2 z-30 w-full opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300 bg-neutral-200 p-2 rounded-xl shadow-xl">
-                <img src="{{ exp.thumbnail }}"
-                     alt="{{ exp.title }}"
-                     width="250"
-                     height="150"
-                     class="w-full h-auto rounded-lg object-cover" />
+          <article class="py-6 first:pt-0 last:pb-0 flex flex-col md:flex-row items-start gap-4 md:gap-5">
+            <div class="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-xl p-0.5 bg-linear-to-br from-primary-100 via-secondary-100 to-tertiary-100 shadow-sm">
+              <div class="w-full h-full rounded-lg overflow-hidden bg-neutral-300 flex items-center justify-center">
+                {% if exp.thumbnail %}
+                  <img src="{{ exp.thumbnail }}"
+                       alt="{{ exp.title }}"
+                       class="w-full h-full object-cover" />
+                {% else %}
+                  <svg class="w-7 h-7 text-neutral-600"
+                       fill="none"
+                       stroke="currentColor"
+                       viewBox="0 0 24 24"
+                       xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                {% endif %}
               </div>
-            {% endif %}
+            </div>
+            {% comment %} Details {% endcomment %}
+            <div class="flex-1 min-w-0 w-full flex flex-col">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-1">
+                <h2 class="font-bold text-xl md:text-2xl text-neutral-900 leading-snug">{{ exp.title }}</h2>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-300 text-secondary-300 w-fit">
+                  {{ exp.get_category_display }}
+                </span>
+              </div>
+              {% comment %} Time Range {% endcomment %}
+              <p class="text-xs md:text-sm font-medium text-neutral-700 mt-1">
+                {{ exp.start_date|date:"M Y" }} -
+                {% if exp.is_ongoing %}
+                  <span class="text-tertiary-100 font-semibold">Present</span>
+                {% else %}
+                  {{ exp.end_date|date:"M Y" }}
+                {% endif %}
+              </p>
+              {% comment %} Description {% endcomment %}
+              <p class="text-sm text-neutral-800 mt-3 leading-relaxed">{{ exp.description }}</p>
+            </div>
           </article>
         {% empty %}
-          <p class="text-center font-light text-primary-100 col-span-full">No experiences added yet.</p>
+          <p class="text-center font-light text-primary-100 py-6">No experiences added yet.</p>
         {% endfor %}
       </div>
     </section>
