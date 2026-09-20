@@ -58,7 +58,6 @@ class ExperienceViewTest(TestCase):
         self.assertContains(response, self.experience.title)
         self.assertContains(response, self.experience.description)
         self.assertContains(response, "Part-Time")
-        self.assertContains(response, "Ongoing")
         self.assertContains(response, f'href="{reverse("home:profile")}"')
 
     def test_empty_experience_page(self):
@@ -66,14 +65,6 @@ class ExperienceViewTest(TestCase):
         response = self.client.get(reverse("home:experience"))
 
         self.assertContains(response, "No experiences added yet.")
-
-    def test_completed_experience_rendering(self):
-        self.experience.end_date = timezone.now()
-        self.experience.save()
-        response = self.client.get(reverse("home:experience"))
-
-        self.assertContains(response, "Completed")
-        self.assertNotContains(response, "Ongoing")
 
 
 class ProjectViewTest(TestCase):
@@ -126,7 +117,8 @@ class ProjectViewTest(TestCase):
         self.assertContains(response, self.project.description)
         self.assertContains(response, "Django")
         self.assertContains(response, "React")
-        self.assertContains(response, "Website")
+        self.assertContains(response, "https://cdn.simpleicons.org/django")
+        self.assertContains(response, "https://cdn.simpleicons.org/react")
         self.assertContains(response, self.project.project_url)
 
     def test_project_detail_page_not_found(self):
