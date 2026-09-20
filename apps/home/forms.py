@@ -1,11 +1,38 @@
 from typing import ClassVar
 
+from django import forms
 from django.forms import ModelForm, Textarea, TextInput, URLInput
 
 from .models import Project
 
 
 class ProjectForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if (
+            self.instance
+            and self.instance.pk
+            and isinstance(self.instance.technologies, list)
+        ):
+            self.initial["technologies"] = ", ".join(self.instance.technologies)
+
+    def clean_technologies(self) -> list[str]:
+        data = self.cleaned_data.get("technologies", "")
+        if isinstance(data, str):
+            return [tech.strip() for tech in data.split(",") if tech.strip()]
+        return data
+
+    technologies = forms.CharField(
+        required=False,
+        widget=TextInput(
+            attrs={
+                "placeholder": "Django, React, Next.js",
+            }
+        ),
+        label="Teknologi yang Digunakan",
+        help_text="Masukkan nama teknologi dipisah koma",
+    )
+
     class Meta:
         model = Project
         fields: ClassVar[list] = [
@@ -22,7 +49,6 @@ class ProjectForm(ModelForm):
             "description": "Deskripsi Proyek",
             "thumbnail": "Thumbnail Proyek",
             "project_url": "URL Proyek",
-            "technologies": "Teknologi yang Digunakan",
             "category": "Kategori Proyek",
         }
 
@@ -47,11 +73,6 @@ class ProjectForm(ModelForm):
             "project_url": URLInput(
                 attrs={
                     "placeholder": "https://github.com/kakBurhan/burhanquestv4",
-                }
-            ),
-            "technologies": TextInput(
-                attrs={
-                    "placeholder": "Django, Python, HTML, CSS",
                 }
             ),
             "category": TextInput(
