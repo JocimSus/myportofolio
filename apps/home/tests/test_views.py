@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -127,3 +128,62 @@ class ProjectViewTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+
+class ProjectDetailViewTest(TestCase):
+    def setUp(self):
+        self.project = Project.objects.create(
+            title="My Project",
+            slug="my-project",
+            description="Sample project.",
+            category="website",
+            technologies=["Django", "React"],
+            project_url="https://github.com",
+        )
+
+    def test_project_detail_page(self):
+        response = self.client.get(
+            reverse("home:project_detail", args=[self.project.slug])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "home/project_detail.html")
+        self.assertContains(response, self.project.title)
+        self.assertContains(response, self.project.description)
+        self.assertContains(response, "Django")
+        self.assertContains(response, "React")
+        self.assertContains(response, "https://cdn.simpleicons.org/django")
+        self.assertContains(response, "https://cdn.simpleicons.org/react")
+        self.assertContains(response, self.project.project_url)
+
+    def test_project_detail_page_not_found(self):
+        response = self.client.get(
+            reverse("home:project_detail", args=["does-not-exist"])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+
+class ProjectFormViewTest(TestCase):
+    def test_project_form_view(self):
+        response = self.client.get(reverse("home:create_project"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "home/projects_form.html")
+        self.assertContains(response, "Add New Projects")
+        self.assertContains(response, f'href="{reverse("home:projects")}"')
+
+    def test_project_form_submission(self):
+        form_data = {
+            "title": "New Project",
+            "description": "New project.",
+            "category": "website",
+            "technologies": "Django, React",
+            "project_url": "https://example.com",
+            "thumbnail": "https://example.com/thumbnail.png",
+            "password": settings.PASSWORD,
+        }
+        response = self.client.post(reverse("home:create_project"), data=form_data)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Project.objects.count(), 1)
