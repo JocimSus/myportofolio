@@ -11,7 +11,7 @@
     <div class="max-w-full mx-2 lg:max-w-6xl lg:mx-auto h-full">
       {% comment %}Hero Section{% endcomment %}
       <section class="flex flex-col lg:flex-row justify-center items-center h-screen outline-yellow-500">
-        <p class="text-4xl font-bold ml-20 mb-10 mt-20 lg:mb-50">
+        <p class="text-4xl font-bold ml-10 md:ml-20 mb-10 mt-20 lg:mb-50">
           <span class="text-primary-100 inline-block animate-fade-in-down animate-blur">Halo!</span> I'm
           <br />
           <span class="font-inter font-bold text-6xl">{{ name }}</span>
@@ -72,13 +72,13 @@
       </section>
       <div class="bg-secondary-100 w-1/2 h-0.5 rounded-full mt-10 mb-5 mx-auto"></div>
       {% comment %}My Interests Section{% endcomment %}
-      <section class="flex flex-col items-center w-full">
+      <section class="flex flex-col items-center w-full overflow-hidden">
         <p class="text-center font-bold mb-5">
           <span class="text-sm text-secondary-100 italic">my interests</span>
         </p>
         <p class="text-center font-bold text-4xl mb-10">I'm interested in</p>
         <div class="flex flex-col bg-linear-to-b from-primary-800 to-tertiary-800 rounded-2xl w-100 h-20 justify-center text-neutral-100 text-center font-bold text-4xl overflow-hidden">
-          <div class="animate-scroll-interests flex flex-col w-full">
+          <div class="animate-scroll-interests flex flex-col max-w-full">
             {% for interest in interests %}
               <p class="h-20 flex items-center justify-center shrink-0">{{ interest }}</p>
             {% endfor %}

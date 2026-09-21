@@ -1,21 +1,21 @@
-<p class="experience-status">
+<p>
   <button type="button"
           class="flex bg-red-500 py-2 px-3 rounded-lg items-center gap-2 shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out w-fit cursor-pointer"
-          popovertarget="delete-project-{{ project.id }}">
+          popovertarget="delete-experience-{{ experience.id }}">
     <i class="hidden! md:inline! fa-solid fa-trash-can text-neutral-200"></i>
-    <span class="text-neutral-200 text-lg font-bold font-inter">Delete Project</span>
+    <span class="text-neutral-200 text-sm font-bold font-inter">Delete</span>
   </button>
 </p>
-<dialog id="delete-project-{{ project.id }}"
+<dialog id="delete-experience-{{ experience.id }}"
         popover="auto"
         aria-modal="true"
-        aria-labelledby="delete-project-title-{{ project.id }}"
+        aria-labelledby="delete-experience-title-{{ experience.id }}"
         class="m-auto p-0 bg-transparent border-0 rounded-2xl shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-md w-[calc(100%-2rem)]">
   <div class="relative bg-neutral-100 rounded-2xl p-6 text-neutral-100 shadow-2xl">
     <button type="button"
-            popovertarget="delete-project-{{ project.id }}"
+            popovertarget="delete-experience-{{ experience.id }}"
             popovertargetaction="hide"
-            aria-label="Close delete project modal"
+            aria-label="Close delete experience modal"
             class="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-lg text-neutral-400 hover:bg-primary-100 hover:text-neutral-100 text-xl font-bold transition-colors cursor-pointer">
       <i class="fa-solid fa-xmark"></i>
     </button>
@@ -23,32 +23,33 @@
       <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100">
         <i class="fa-solid fa-triangle-exclamation text-lg text-white"></i>
       </div>
-      <h2 id="delete-project-title-{{ project.id }}"
+      <h2 id="delete-experience-title-{{ experience.id }}"
           class="text-xl font-bold text-primary-100">
-        Delete Project?
+        Delete Experience?
       </h2>
     </div>
     <p class="text-sm text-black mb-6">
       Are you sure you want to delete
-      <strong class="font-semibold text-primary-100">{{ project.title }}</strong>?
+      <strong class="font-semibold text-primary-100">{{ experience.title }}</strong>?
       This action cannot be undone.
     </p>
-    <form method="post" action="{% url 'home:delete_project' project.id %}">
+    <form method="post"
+          action="{% url 'home:delete_experience' experience.id %}">
       {% csrf_token %}
       <div class="mb-4">
-        <label for="password-delete-{{ project.id }}"
+        <label for="password-delete-{{ experience.id }}"
                class="block text-sm font-medium text-black mb-1">
           Enter Admin Password
         </label>
         <input type="password"
-               id="password-delete-{{ project.id }}"
+               id="password-delete-{{ experience.id }}"
                name="password"
                required
                class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-100">
       </div>
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-neutral-800">
         <button type="button"
-                popovertarget="delete-project-{{ project.id }}"
+                popovertarget="delete-experience-{{ experience.id }}"
                 popovertargetaction="hide"
                 class="px-4 py-2 text-sm font-semibold text-neutral-100 bg-secondary-100 rounded-lg hover:bg-secondary-300 transition-colors duration-300 ease-in-out shadow-md cursor-pointer">
           Cancel
