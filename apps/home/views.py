@@ -1,6 +1,8 @@
+import json
+
 from django.contrib import messages
 from django.core import serializers
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .decorators import require_password
@@ -10,34 +12,21 @@ from .selectors import get_all_experiences_by_start_date, get_all_projects
 
 # Create your views here.
 def profile(req: HttpRequest) -> HttpResponse:
-    ctx = {
-        "npm": "2506602694",
-        "study_program": "Ilmu Komputer - S1",
-        "bio": (
-            "a passionate computer science student at Universitas Indonesia. "
-            "I love exploring new technologies and applying them to solve real-world problems."
-        ),
-        "interests": [
-            "Web Development",
-            "System Design",
-            "Operating Systems",
-            "Cloud Infrastructure",
-            "Web Development",
-        ],
-        "experience_truncated": [
-            "Winner of RISTEK Hackathon 2026",
-            "Vice Lead of IT Dev OH Fasilkom 2026",
-            "Member of RISTEK Web Development",
-        ],
-    }
+    res = get_profile_json(req)
+    ctx = json.loads(res.content.decode("utf-8"))
 
     return render(req, "home/profile.html", ctx)
 
 
 # Experience
 def experience(req: HttpRequest) -> HttpResponse:
+    res = get_experiences_json(req)
+
+    experiences = serializers.deserialize("json", res.content.decode("utf-8"))
+    experiences = [exp.object for exp in experiences]
+
     ctx = {
-        "experiences": get_all_experiences_by_start_date(),
+        "experiences": experiences,
     }
 
     return render(req, "home/experience.html", ctx)
@@ -172,3 +161,42 @@ def get_projects_json(req: HttpRequest) -> HttpResponse:
 
     projects_json = serializers.serialize("json", projects)
     return HttpResponse(projects_json, content_type="application/json")
+
+
+def get_project_detail_json(req: HttpRequest, slug: str) -> HttpResponse:
+    project = get_object_or_404(get_all_projects(), slug=slug)
+
+    project_json = serializers.serialize("json", [project])
+    return HttpResponse(project_json, content_type="application/json")
+
+
+def get_experiences_json(_req: HttpRequest) -> HttpResponse:
+    experiences = get_all_experiences_by_start_date()
+
+    experiences_json = serializers.serialize("json", experiences)
+    return HttpResponse(experiences_json, content_type="application/json")
+
+
+def get_profile_json(_req: HttpRequest) -> HttpResponse:
+    data = {
+        "npm": "2506602694",
+        "study_program": "Ilmu Komputer - S1",
+        "bio": (
+            "a passionate computer science student at Universitas Indonesia. "
+            "I love exploring new technologies and applying them to solve real-world problems."
+        ),
+        "interests": [
+            "Web Development",
+            "System Design",
+            "Operating Systems",
+            "Cloud Infrastructure",
+            "Web Development",
+        ],
+        "experience_truncated": [
+            "Winner of RISTEK Hackathon 2026",
+            "Vice Lead of IT Dev OH Fasilkom 2026",
+            "Member of RISTEK Web Development",
+        ],
+    }
+
+    return JsonResponse(data)
