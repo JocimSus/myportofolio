@@ -75,11 +75,6 @@ class ProjectForm(ModelForm):
                     "placeholder": "https://github.com/kakBurhan/burhanquestv4",
                 }
             ),
-            "category": TextInput(
-                attrs={
-                    "placeholder": "website",
-                }
-            ),
         }
 
 
