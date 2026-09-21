@@ -3,7 +3,7 @@ from typing import ClassVar
 from django import forms
 from django.forms import ModelForm, Textarea, TextInput, URLInput
 
-from .models import Project
+from .models import Experience, Project
 
 
 class ProjectForm(ModelForm):
@@ -78,6 +78,58 @@ class ProjectForm(ModelForm):
             "category": TextInput(
                 attrs={
                     "placeholder": "website",
+                }
+            ),
+        }
+
+
+class ExperienceForm(ModelForm):
+    class Meta:
+        model = Experience
+        fields: ClassVar[list] = [
+            "title",
+            "description",
+            "category",
+            "thumbnail",
+            "start_date",
+            "end_date",
+        ]
+
+        labels: ClassVar[dict] = {
+            "title": "Nama Pengalaman",
+            "description": "Deskripsi Pengalaman",
+            "category": "Kategori Pengalaman",
+            "thumbnail": "Thumbnail Pengalaman",
+            "start_date": "Tanggal Mulai",
+            "end_date": "Tanggal Selesai",
+        }
+
+        widgets: ClassVar[dict] = {
+            "title": TextInput(
+                attrs={
+                    "placeholder": "Software Engineer Intern",
+                    "maxlength": 255,
+                }
+            ),
+            "description": Textarea(
+                attrs={
+                    "placeholder": "Ceritakan pengalamanmu di sini...",
+                    "rows": 3,
+                }
+            ),
+            "thumbnail": URLInput(
+                attrs={
+                    "placeholder": "https://drive.google.com/thumbnail?id=...&sz=w1000",
+                }
+            ),
+            "start_date": forms.DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+            "end_date": forms.DateInput(
+                attrs={
+                    "type": "date",
                 }
             ),
         }
