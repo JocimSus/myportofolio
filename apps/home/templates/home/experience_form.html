@@ -1,16 +1,28 @@
 {% extends 'home/base.html' %}
 
 {% block meta %}
-  <title>Add Project - {{ nick }}</title>
+  <title>
+    {% if experience %}
+      Edit Experience
+    {% else %}
+      Add Experience
+    {% endif %}
+    - {{ nick }}
+  </title>
 {% endblock %}
 {% block content %}
   <main class="max-w-full mx-auto">
     <section class="flex flex-col items-center min-h-screen">
       <div class="flex flex-col justify-center mt-12">
-        <h1 class="text-4xl font-bold mb-12">Add New Projects</h1>
+        <h1 class="text-4xl font-bold mb-12">
+          {% if experience %}
+            Edit Experience
+          {% else %}
+            Add New Experience
+          {% endif %}
+        </h1>
         <form method="post"
-              action="{% url 'home:create_project' %}"
-              class="project-form">
+              action="{% if experience %}{% url 'home:update_experience' experience.pk %}{% else %}{% url 'home:create_experience' %}{% endif %}">
           {% csrf_token %}
           <div class="mb-5 flex flex-col gap-2">
             <label for="password" class="text-sm font-medium">Enter Admin Password</label>
@@ -33,9 +45,13 @@
           {% endfor %}
           <button type="submit"
                   class="bg-secondary-100 p-3 cursor-pointer rounded-lg text-neutral-100 font-bold">
-            Tambah Project
+            {% if experience %}
+              Simpan Perubahan
+            {% else %}
+              Tambah Experience
+            {% endif %}
           </button>
-          <a href="{% url 'home:projects' %}"
+          <a href="{% url 'home:experience' %}"
              class="bg-black p-3 rounded-lg text-neutral-100 font-bold">Batal</a>
         </form>
       </div>
