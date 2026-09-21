@@ -43,6 +43,15 @@
               </p>
               {% comment %} Description {% endcomment %}
               <p class="text-sm text-neutral-800 mt-3 leading-relaxed">{{ exp.description }}</p>
+              {% comment %} Action Buttons {% endcomment %}
+              <div class="flex items-center gap-2 mt-4 md:mt-0">
+                <a href="{% url 'home:update_experience' exp.pk %}"
+                   class="text-lg px-3 py-2 rounded-lg bg-secondary-100 text-neutral-100 font-semibold hover:bg-secondary-200 transition-all duration-300">
+                  <i class="fa-solid fa-pen"></i>
+                  <span class="ml-2">Edit</span>
+                </a>
+                {% include "home/components/experience_delete_modal.html" with experience=exp %}
+              </div>
             </div>
           </article>
         {% empty %}
@@ -50,5 +59,12 @@
         {% endfor %}
       </div>
     </section>
+    <div class="bottom-0 flex justify-end">
+      <a href="{% url 'home:create_experience' %}"
+         class="items-center px-5 py-3 rounded-xl text-neutral-200 text-2xl bg-secondary-300 hover:bg-secondary-500 shadow-lg hover:shadow-xl transition-all duration-300">
+        <i class="fa-solid fa-plus"></i>
+        <span class="ml-2 font-bold">Add Experience</span>
+      </a>
+    </div>
   </main>
 {% endblock %}

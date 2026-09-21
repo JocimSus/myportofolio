@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .decorators import require_password
-from .forms import ProjectForm
+from .forms import ExperienceForm, ProjectForm
 from .selectors import get_all_experiences_by_start_date, get_all_projects
 
 
@@ -41,6 +41,54 @@ def experience(req: HttpRequest) -> HttpResponse:
     }
 
     return render(req, "home/experience.html", ctx)
+
+
+@require_password
+def create_experience(req: HttpRequest) -> HttpResponse:
+    form = ExperienceForm(req.POST or None)
+
+    if req.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(req, "Pengalaman baru berhasil ditambahkan!")
+        return redirect("home:experience")
+
+    ctx = {
+        "form": form,
+    }
+    return render(req, "home/experience_form.html", ctx)
+
+
+@require_password
+def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
+    experience = get_object_or_404(
+        get_all_experiences_by_start_date(), pk=experience_id
+    )
+    form = ExperienceForm(req.POST or None, instance=experience)
+
+    if req.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(req, "Pengalaman berhasil diperbarui!")
+        return redirect("home:experience")
+
+    ctx = {
+        "form": form,
+        "experience": experience,
+    }
+    return render(req, "home/experience_form.html", ctx)
+
+
+@require_password
+def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
+    experience = get_object_or_404(
+        get_all_experiences_by_start_date(), pk=experience_id
+    )
+
+    if req.method == "POST":
+        experience.delete()
+        messages.success(req, "Pengalaman berhasil dihapus!")
+        return redirect("home:experience")
+
+    return redirect("home:experience")
 
 
 # Project
