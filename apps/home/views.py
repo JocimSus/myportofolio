@@ -79,7 +79,7 @@ def create_project(req: HttpRequest) -> HttpResponse:
     ctx = {
         "form": form,
     }
-    return render(req, "home/projects_form.html", ctx)
+    return render(req, "home/project_form.html", ctx)
 
 
 @require_password

@@ -169,7 +169,7 @@ class ProjectFormViewTest(TestCase):
         response = self.client.get(reverse("home:create_project"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "home/projects_form.html")
+        self.assertTemplateUsed(response, "home/project_form.html")
         self.assertContains(response, "Add New Projects")
         self.assertContains(response, f'href="{reverse("home:projects")}"')
 
