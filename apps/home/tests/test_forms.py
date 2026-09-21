@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 
 from ..forms import ExperienceForm, ProjectForm
@@ -150,8 +152,8 @@ class ExperienceFormTest(TestCase):
         self.assertEqual(updated_experience.description, "Updated")
         self.assertEqual(updated_experience.category, "internship")
         self.assertEqual(updated_experience.thumbnail, "https://example.com/new.png")
-        self.assertEqual(updated_experience.start_date, "2025-02-01")
-        self.assertEqual(updated_experience.end_date, "2025-04-01")
+        self.assertEqual(updated_experience.start_date, datetime.date(2025, 2, 1))
+        self.assertEqual(updated_experience.end_date, datetime.date(2025, 4, 1))
 
     # DELETE
     def test_delete_experience(self):
