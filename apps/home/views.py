@@ -34,6 +34,7 @@ def profile(req: HttpRequest) -> HttpResponse:
     return render(req, "home/profile.html", ctx)
 
 
+# Experience
 def experience(req: HttpRequest) -> HttpResponse:
     ctx = {
         "experiences": get_all_experiences_by_start_date(),
@@ -42,6 +43,7 @@ def experience(req: HttpRequest) -> HttpResponse:
     return render(req, "home/experience.html", ctx)
 
 
+# Project
 def projects(req: HttpRequest) -> HttpResponse:
     res = get_projects_json(req)
 
@@ -62,6 +64,7 @@ def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
 
     ctx = {
         "project": project,
+        "slug": slug,
     }
 
     return render(req, "home/project_detail.html", ctx)
@@ -83,6 +86,23 @@ def create_project(req: HttpRequest) -> HttpResponse:
 
 
 @require_password
+def update_project(req: HttpRequest, slug: str) -> HttpResponse:
+    project = get_object_or_404(get_all_projects(), slug=slug)
+    form = ProjectForm(req.POST or None, instance=project)
+
+    if req.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(req, "Proyek berhasil diperbarui!")
+        return redirect("home:projects")
+
+    ctx = {
+        "form": form,
+        "project": project,
+    }
+    return render(req, "home/project_form.html", ctx)
+
+
+@require_password
 def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
     project = get_object_or_404(get_all_projects(), pk=project_id)
 
@@ -95,8 +115,6 @@ def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
 
 
 # API
-
-
 def get_projects_json(req: HttpRequest) -> HttpResponse:
     title_query = req.GET.get("title", "").strip()
     projects = get_all_projects()

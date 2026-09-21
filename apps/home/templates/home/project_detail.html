@@ -31,6 +31,11 @@
           <span class="text-neutral-200 text-3xl font-bold font-inter">Go to Project</span>
         </a>
       {% endif %}
+      <a href="{% url 'home:update_project' project.slug %}"
+         class="flex ml-auto mt-2 bg-tertiary-300 py-5 px-7 rounded-lg items-center gap-2 shadow-xl hover:bg-tertiary-400 hover:scale-105 transition-all duration-300 ease-in-out w-fit">
+        <i class="fa-solid fa-pen text-neutral-200 text-lg"></i>
+        <span class="text-neutral-200 text-lg font-bold font-inter">Update Project</span>
+      </a>
       {% if project.technologies %}
         <section class="relative z-10 w-full my-16 py-8 md:py-12">
           <div class="mx-auto w-fit max-w-full rounded-2xl bg-white px-5 py-5 text-primary-100 shadow-xl md:rounded-[28px] md:px-10 md:py-7">
