@@ -2,7 +2,7 @@
 
 {% block meta %}
   <title>
-    {% if form.instance.pk %}
+    {% if project %}
       Edit Project
     {% else %}
       Add Project
@@ -15,14 +15,14 @@
     <section class="flex flex-col items-center min-h-screen">
       <div class="flex flex-col justify-center mt-12">
         <h1 class="text-4xl font-bold mb-12">
-          {% if form.instance.pk %}
+          {% if project %}
             Edit Project
           {% else %}
             Add New Projects
           {% endif %}
         </h1>
         <form method="post"
-              action="{% if form.instance.pk %}{% url 'home:update_project' project.slug %}{% else %}{% url 'home:create_project' %}{% endif %}"
+              action="{% if project %}{% url 'home:update_project' project.slug %}{% else %}{% url 'home:create_project' %}{% endif %}"
               class="project-form">
           {% csrf_token %}
           <div class="mb-5 flex flex-col gap-2">
@@ -46,7 +46,7 @@
           {% endfor %}
           <button type="submit"
                   class="bg-secondary-100 p-3 cursor-pointer rounded-lg text-neutral-100 font-bold">
-            {% if form.instance.pk %}
+            {% if project %}
               Simpan Perubahan
             {% else %}
               Tambah Project
