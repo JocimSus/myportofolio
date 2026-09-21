@@ -108,3 +108,17 @@ Saya menggunakan Chatbot Google Gemini dan ChatGPT selama proses programming unt
 1. Membantu saya dalam melakukan research mengenai best practices dalam menstruktur templates dalam bahasa templating django.
 2. Membantu saya dalam melakukan perbaikan pada animasi css untuk meningkatkan interaktibilitas website.
 3. Membantu saya dalam melakukan refactor pada test cases tutorial.
+
+### Tugas 3
+1. Django menyediakan `ModelForm` yang mempercepat pembuatan form. `ModelForm` secara otomatis memetakan field dan tipe data dari Model Django menjadi input form HTML. `ModelForm` menangani validasi data secara otomatis melalui method `form.is_valid()`. Pembuatan atau pembaruan data pada model dari form dengan memanggil method `form.save()`. CSRF (Cross-Site Request Forgery) adalah suatu eksploit untuk menggunakan otorisasi suatu pengguna untuk melakukan suatu aksi atas nama pengguna tersebut. `csrf_token` berfungsi untuk menghasilkan sebuah token yang unik untuk setiap pengguna, sehingga ketika melakukan aksi pada form, maka token akan diverifikasi dengan sesi sebuah pengguna.
+2. JSON lebih disukai dalam pengembangan web app karena memiliki struktur yang lebih concise daripada XML. JSON menggunakan struktur data key-value dibandingkan markup language seperti XML. Lalu, JSON memiliki tipe data primitif javascript seperti string, number, boolean, dll, sedangkan XML menganggap semua tipe data sebagai teks biasa. Sebagian besar ekosistem framework Frontend pada zaman sekarang menggunakan bahasa javascript, seperti React, Svelte, dll dengan API fetch yang secara default meminta data JSON.
+3. Data diambil langsung dari Model data seperti Experiences melalui `Experiences.objects.all()`. Lalu, instance model tersebut diserealize menjadi format JSON untuk dikirimkan. Lalu, view yang memerlukan datanya mendapatkan response dalam bentuk JSON dan dideserealize menjadi sebuah objek python yang dapat diproses lebih lanjut menjadi konteks untuk template. Serialization harus dilakukan pada Model data karena suatu response memerlukan data yang bisa dikirim melalui HTTP. Serialization mengubah struktur objek python menjadi format key-value untuk dikirim melalui JSON.
+
+#### AI Disclosure
+Saya menggunakan Chatbot Google Gemini selama proses programming untuk membantu dalam hal berikut. Chat Logs: [Chat Logs](https://share.gemini.google/3bVU7RcegMAR)
+1. Membantu saya dalam menganalisis struktur refactoring template projek yang baik.
+2. Mengajarkan saya cara membuat suatu form untuk create dan update dengan best practices.
+3. Mengklarifikasi kesalahan dalam pemrograman dan memberikan solusi untuk memelajari kesalahan.
+4. Menganalisis views untuk menemukan fungsi yang dapat diubah agar menampilkan data menggunakan response JSON.
+
+AI memiliki keterbatasan halusinasi konteks. Beberapa kali saat melakukan prompting, chatbot memberikan solusi yang terlihat benar, tetapi tidak sesuai dengan struktur projek saya. Setiap kali chatbot melakukan halusinasi, saya bisa memitigasinya dengan memberikan konteks secara proaktif kepada chatbot dengan prompt yang jelas. Namun, tetap saja terkadang memberikan hasil yang tidak sesuai, seperti penulisan test yang tidak sesuai keinginan, ataupun pembuatan form yang memiliki tipe input yang kurang sesuai. Saya, memperbaikinya dengan menyesuaikan input type form dengan keperluan saya.
