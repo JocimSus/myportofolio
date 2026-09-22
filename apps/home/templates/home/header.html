@@ -31,6 +31,14 @@
           projects
         </a>
       </li>
+      {% comment %}Auth Links Desktop{% endcomment %}
+      {% if user.is_authenticated %}
+        <li><span class="nav-user text-xl font-medium">{{ user.username }}</span></li>
+        <li><a href="{% url 'home:logout' %}" class="hover:text-tertiary-100">logout</a></li>
+      {% else %}
+        <li><a href="{% url 'home:login' %}" class="hover:text-tertiary-100">login</a></li>
+        <li><a href="{% url 'home:register' %}" class="hover:text-tertiary-100">register</a></li>
+      {% endif %}
     </ul>
     {% comment %}Tailing Nav Decor (Desktop){% endcomment %}
     <div class="hidden md:block md:ml-50 mt-1">
@@ -63,6 +71,18 @@
        class="px-4 py-2 rounded-xl text-lg transition-colors {% if request.path == '/projects/' %} text-primary-100 font-bold {% else %} hover:text-tertiary-100 {% endif %}">
       projects
     </a>
+    <hr class="border-neutral-300 my-1" />
+    {% comment %}Auth Links Mobile{% endcomment %}
+    {% if user.is_authenticated %}
+      <span class="nav-user px-4 py-1 text-sm font-semibold text-neutral-600">{{ user.username }}</span>
+      <a href="{% url 'home:logout' %}"
+         class="px-4 py-2 rounded-xl text-lg transition-colors hover:text-tertiary-100">logout</a>
+    {% else %}
+      <a href="{% url 'home:login' %}"
+         class="px-4 py-2 rounded-xl text-lg transition-colors hover:text-tertiary-100">login</a>
+      <a href="{% url 'home:register' %}"
+         class="px-4 py-2 rounded-xl text-lg transition-colors hover:text-tertiary-100">register</a>
+    {% endif %}
   </div>
 </header>
 {% comment %}Mobile Dropdown Toggle Script{% endcomment %}

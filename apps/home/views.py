@@ -1,6 +1,8 @@
 import json
 
 from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -149,6 +151,40 @@ def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
         return redirect("home:projects")
 
     return redirect("home:projects")
+
+
+# Auth
+def register(req: HttpRequest) -> HttpResponse:
+    form = UserCreationForm(req.POST or None)
+
+    if req.method == "POST" and form.is_valid():
+        user = form.save()
+        login(req, user)
+        messages.success(req, "Akun berhasil dibuat. Silakan login.")
+        return redirect("home:login")
+
+    ctx = {
+        "form": form,
+    }
+    return render(req, "home/register.html", ctx)
+
+
+def login_user(req: HttpRequest) -> HttpResponse:
+    form = AuthenticationForm(req, data=req.POST or None)
+
+    if req.method == "POST" and form.is_valid():
+        login(req, form.get_user())
+        return redirect("home:profile")
+
+    ctx = {
+        "form": form,
+    }
+    return render(req, "home/login.html", ctx)
+
+
+def logout_user(req: HttpRequest) -> HttpResponse:
+    logout(req)
+    return redirect("home:profile")
 
 
 # API

@@ -29,6 +29,8 @@ urlpatterns = [
         name="delete_project",
     ),
     path("projects/<slug:slug>/", views.project_detail, name="project_detail"),
-    # API
-    path("api/projects/", views.get_projects_json, name="get_projects_json"),
+    # Auth
+    path("register/", views.register, name="register"),
+    path("login/", views.login_user, name="login"),
+    path("logout/", views.logout_user, name="logout"),
 ]
