@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.contrib import messages
@@ -14,8 +15,12 @@ from .selectors import get_all_experiences_by_start_date, get_all_projects
 
 # Create your views here.
 def profile(req: HttpRequest) -> HttpResponse:
+    last_login = req.COOKIES.get("last_login", "Belum ada sesi login")
     res = get_profile_json(req)
-    ctx = json.loads(res.content.decode("utf-8"))
+    ctx = {
+        **json.loads(res.content.decode("utf-8")),
+        "last_login": last_login,
+    }
 
     return render(req, "home/profile.html", ctx)
 
@@ -173,8 +178,14 @@ def login_user(req: HttpRequest) -> HttpResponse:
     form = AuthenticationForm(req, data=req.POST or None)
 
     if req.method == "POST" and form.is_valid():
-        login(req, form.get_user())
-        return redirect("home:profile")
+        user = form.get_user()
+        login(req, user)
+        res = redirect("home:profile")
+        res.set_cookie(
+            "last_login",
+            datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        return res
 
     ctx = {
         "form": form,
@@ -184,7 +195,9 @@ def login_user(req: HttpRequest) -> HttpResponse:
 
 def logout_user(req: HttpRequest) -> HttpResponse:
     logout(req)
-    return redirect("home:profile")
+    res = redirect("home:profile")
+    res.delete_cookie("last_login")
+    return res
 
 
 # API
