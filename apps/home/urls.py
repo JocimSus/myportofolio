@@ -28,9 +28,16 @@ urlpatterns = [
         views.delete_project,
         name="delete_project",
     ),
+    path(
+        "projects/<uuid:project_id>/star/",
+        views.toggle_star,
+        name="toggle_star",
+    ),
     path("projects/<slug:slug>/", views.project_detail, name="project_detail"),
     # Auth
     path("register/", views.register, name="register"),
     path("login/", views.login_user, name="login"),
     path("logout/", views.logout_user, name="logout"),
+    # API
+    path("api/projects/", views.get_projects_json, name="get_projects_json"),
 ]

@@ -1,0 +1,17 @@
+<form method="post"
+      action="{% url 'home:toggle_star' project.id %}"
+      class="inline-flex items-center">
+  {% csrf_token %}
+  <button type="submit"
+          class="group inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400/50 active:scale-95 {% if user in project.starred_by.all %} border-amber-400/60 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 {% else %} border-neutral-300 bg-neutral-200 text-black hover:bg-neutral-200 hover:border-neutral-400 {% endif %}"
+          title="{% if project.starred_by.all %}Dibintangi oleh {{ project.starred_by.all|join:', ' }}{% else %}Jadilah yang pertama memberi star{% endif %}">
+    <span aria-hidden="true"
+          class="text-base transition-transform duration-200 group-hover:scale-110 {% if user in project.starred_by.all %} text-amber-500 {% else %} text-neutral-300 group-hover:text-amber-400 {% endif %}">
+      <i class="fa-solid fa-star"></i>
+    </span>
+    <span>{% if user in project.starred_by.all %}Unstar{% else %}Star{% endif %}</span>
+    <span class="px-2 py-0.5 text-xs font-bold rounded-full transition-colors {% if user in project.starred_by.all %} bg-amber-500/20 text-amber-700 {% else %} bg-neutral-200 text-black group-hover:bg-neutral-300 {% endif %}">
+      {{ project.starred_by.count }}
+    </span>
+  </button>
+</form>

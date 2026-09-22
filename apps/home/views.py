@@ -3,13 +3,16 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .decorators import require_password
 from .forms import ExperienceForm, ProjectForm
+from .models import Project
 from .selectors import get_all_experiences_by_start_date, get_all_projects
 
 
@@ -114,8 +117,12 @@ def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
     return render(req, "home/project_detail.html", ctx)
 
 
+@login_required(login_url="/login/")
 @require_password
 def create_project(req: HttpRequest) -> HttpResponse:
+    if not req.user.is_superuser:
+        raise PermissionDenied
+
     form = ProjectForm(req.POST or None)
 
     if req.method == "POST" and form.is_valid():
@@ -154,6 +161,19 @@ def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
         project.delete()
         messages.success(req, "Project berhasil dihapus!")
         return redirect("home:projects")
+
+    return redirect("home:projects")
+
+
+@login_required(login_url="/login/")
+def toggle_star(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+
+    if request.method == "POST":
+        if request.user in project.starred_by.all():
+            project.starred_by.remove(request.user)
+        else:
+            project.starred_by.add(request.user)
 
     return redirect("home:projects")
 
@@ -208,7 +228,9 @@ def get_projects_json(req: HttpRequest) -> HttpResponse:
     if title_query:
         projects = projects.filter(title__icontains=title_query)
 
-    projects_json = serializers.serialize("json", projects)
+    projects_json = serializers.serialize(
+        "json", projects, use_natural_foreign_keys=True
+    )
     return HttpResponse(projects_json, content_type="application/json")
 
 
