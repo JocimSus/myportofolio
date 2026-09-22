@@ -24,11 +24,13 @@
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
         </form>
-        <a href="{% url "home:create_project" %}"
-           class="ml-auto bg-secondary-300 text-neutral-200 py-2 px-3 rounded-lg shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-2">
-          <i class="fa-solid fa-plus"></i>
-          <span class="font-bold">Add Project</span>
-        </a>
+        {% if user.is_superuser %}
+          <a href="{% url "home:create_project" %}"
+             class="ml-auto bg-secondary-300 text-neutral-200 py-2 px-3 rounded-lg shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span class="font-bold">Add Project</span>
+          </a>
+        {% endif %}
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {% for project in projects %}
@@ -55,6 +57,7 @@
                 {% endfor %}
               </div>
             {% endif %}
+            <div class="mb-2">{% include "home/components/project_star.html" with project=project %}</div>
             <div class="flex gap-2">
               {% if project.slug %}
                 <a href="{% url 'home:project_detail' project.slug %}"
@@ -63,7 +66,9 @@
                   <span class="text-neutral-200 text-lg font-bold font-inter">View Project</span>
                 </a>
               {% endif %}
-              {% include "home/components/project_delete_modal.html" with project=project %}
+              {% if user.is_superuser %}
+                {% include "home/components/project_delete_modal.html" with project=project %}
+              {% endif %}
             </div>
             <div class="absolute bottom-0 left-0 right-0 h-3 bg-secondary-300 rounded-b-lg z-10"></div>
           </article>

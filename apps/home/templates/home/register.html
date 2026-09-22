@@ -1,0 +1,44 @@
+{% extends "home/base.html" %}
+
+{% block meta %}
+  <title>Register - {{ name }}</title>
+{% endblock %}
+{% block content %}
+  <main class="max-w-full mx-auto">
+    <section class="flex flex-col items-center min-h-screen">
+      <div class="flex flex-col justify-center mt-12 w-full max-w-md px-4">
+        <h1 class="text-4xl font-bold mb-12 text-center">Buat Akun</h1>
+        <form method="post"
+              action="{% url 'home:register' %}"
+              class="flex flex-col">
+          {% csrf_token %}
+          {% for error in form.non_field_errors %}
+            <p class="text-red-400 text-sm mb-4">{{ error }}</p>
+          {% endfor %}
+          {% for field in form %}
+            <div class="w-full flex flex-col gap-2 mb-5 form-w-full">
+              <label for="{{ field.id_for_label }}" class="text-sm font-medium">{{ field.label }}</label>
+              <div class="w-full rounded-lg border border-primary-100 bg-neutral-200 text-sm transition focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-800">
+                {{ field }}
+              </div>
+              {% if field.help_text %}
+                <div class="text-xs text-neutral-500 mt-1">{{ field.help_text }}</div>
+              {% endif %}
+              {% for error in field.errors %}
+                <p class="text-red-400 text-sm">{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endfor %}
+          <button type="submit"
+                  class="bg-secondary-100 p-3 cursor-pointer rounded-lg text-neutral-100 font-bold mt-2 hover:opacity-90 transition">
+            Daftar
+          </button>
+        </form>
+        <p class="mt-6 text-center text-sm">
+          Sudah punya akun? <a href="{% url 'home:login' %}"
+    class="font-bold underline hover:text-tertiary-100">Login di sini</a>.
+        </p>
+      </div>
+    </section>
+  </main>
+{% endblock %}

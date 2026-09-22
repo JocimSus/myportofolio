@@ -1,5 +1,6 @@
 import uuid
 
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.text import slugify
 
@@ -42,6 +43,9 @@ class Project(models.Model):
     project_url = models.URLField(max_length=200, null=True, blank=True)
     technologies = models.JSONField(default=list, blank=True)
     category = models.CharField(max_length=20, choices=ProjectType.choices)
+    starred_by = models.ManyToManyField(
+        User, related_name="starred_projects", blank=True
+    )
 
     def __str__(self) -> str:
         return self.title
