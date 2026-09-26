@@ -5,11 +5,10 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
-from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
-from .decorators import require_password
+from .decorators import role_required, superuser_required
 from .forms import ExperienceForm, ProjectForm
 from .selectors import (
     get_all_experiences_by_start_date,
@@ -46,7 +45,8 @@ def experience(req: HttpRequest) -> HttpResponse:
     return render(req, "home/experience.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@superuser_required
 def create_experience(req: HttpRequest) -> HttpResponse:
     form = ExperienceForm(req.POST or None)
 
@@ -61,7 +61,8 @@ def create_experience(req: HttpRequest) -> HttpResponse:
     return render(req, "home/experience_form.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["editor"])
 def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
     experience = get_experience_by_id(experience_id)
     form = ExperienceForm(req.POST or None, instance=experience)
@@ -78,7 +79,8 @@ def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
     return render(req, "home/experience_form.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@superuser_required
 def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
     experience = get_experience_by_id(experience_id)
 
@@ -121,11 +123,8 @@ def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
-@require_password
+@superuser_required
 def create_project(req: HttpRequest) -> HttpResponse:
-    if not req.user.is_superuser:
-        raise PermissionDenied
-
     form = ProjectForm(req.POST or None)
 
     if req.method == "POST" and form.is_valid():
@@ -139,7 +138,8 @@ def create_project(req: HttpRequest) -> HttpResponse:
     return render(req, "home/project_form.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["editor"])
 def update_project(req: HttpRequest, slug: str) -> HttpResponse:
     project = get_project_by_slug(slug)
     form = ProjectForm(req.POST or None, instance=project)
@@ -156,7 +156,8 @@ def update_project(req: HttpRequest, slug: str) -> HttpResponse:
     return render(req, "home/project_form.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@superuser_required
 def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
     project = get_project_by_id(project_id)
 
@@ -216,6 +217,7 @@ def login_user(req: HttpRequest) -> HttpResponse:
     return render(req, "home/login.html", ctx)
 
 
+@login_required(login_url="/login/")
 def logout_user(req: HttpRequest) -> HttpResponse:
     logout(req)
     res = redirect("home:profile")

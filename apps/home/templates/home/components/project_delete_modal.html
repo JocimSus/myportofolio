@@ -35,17 +35,6 @@
     </p>
     <form method="post" action="{% url 'home:delete_project' project.id %}">
       {% csrf_token %}
-      <div class="mb-4">
-        <label for="password-delete-{{ project.id }}"
-               class="block text-sm font-medium text-black mb-1">
-          Enter Admin Password
-        </label>
-        <input type="password"
-               id="password-delete-{{ project.id }}"
-               name="password"
-               required
-               class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-100">
-      </div>
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-neutral-800">
         <button type="button"
                 popovertarget="delete-project-{{ project.id }}"

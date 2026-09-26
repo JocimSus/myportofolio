@@ -1,5 +1,7 @@
 {% extends 'home/base.html' %}
 
+{% load auth_helper %}
+
 {% block meta %}
   <title>{{ nick }} - Experience</title>
 {% endblock %}
@@ -44,14 +46,18 @@
               {% comment %} Description {% endcomment %}
               <p class="text-sm text-neutral-800 mt-3 leading-relaxed mb-4">{{ exp.description }}</p>
               {% comment %} Action Buttons {% endcomment %}
-              <div class="flex items-center gap-2 mt-4 md:mt-0">
-                <a href="{% url 'home:update_experience' exp.pk %}"
-                   class="text-sm px-3 py-2 rounded-lg bg-secondary-100 text-neutral-100 font-semibold hover:bg-secondary-200 transition-all duration-300">
-                  <i class="fa-solid fa-pen"></i>
-                  <span class="ml-2">Edit</span>
-                </a>
-                {% include "home/components/experience_delete_modal.html" with experience=exp %}
-              </div>
+              {% if user|has_group:"editor" %}
+                <div class="flex items-center gap-2 mt-4 md:mt-0">
+                  <a href="{% url 'home:update_experience' exp.pk %}"
+                     class="text-sm px-3 py-2 rounded-lg bg-secondary-100 text-neutral-100 font-semibold hover:bg-secondary-200 transition-all duration-300">
+                    <i class="fa-solid fa-pen"></i>
+                    <span class="ml-2">Edit</span>
+                  </a>
+                  {% if user.is_superuser %}
+                    {% include "home/components/experience_delete_modal.html" with experience=exp %}
+                  {% endif %}
+                </div>
+              {% endif %}
             </div>
           </article>
         {% empty %}
