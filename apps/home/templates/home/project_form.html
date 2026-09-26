@@ -25,14 +25,6 @@
               action="{% if project %}{% url 'home:update_project' project.slug %}{% else %}{% url 'home:create_project' %}{% endif %}"
               class="project-form">
           {% csrf_token %}
-          <div class="mb-5 flex flex-col gap-2">
-            <label for="password" class="text-sm font-medium">Enter Admin Password</label>
-            <input type="password"
-                   id="password"
-                   name="password"
-                   required
-                   class="w-full rounded-lg border border-primary-100 bg-neutral-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-800">
-          </div>
           {% for field in form %}
             <div class="w-full flex flex-col gap-2 mb-5 form-w-full">
               <label for="{{ field.id_for_label }}" class="text-sm font-medium">{{ field.label }}</label>

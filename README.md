@@ -423,3 +423,14 @@ Lalu, saya menggunakan coding agent Antigravity secara lokal dalam proses rewrit
 AI memiliki keterbatasan halusinasi konteks. Beberapa kali saat melakukan prompting, chatbot memberikan solusi yang terlihat benar, tetapi tidak sesuai dengan struktur projek saya. Setiap kali chatbot melakukan halusinasi, saya bisa memitigasinya dengan memberikan konteks secara proaktif kepada chatbot dengan prompt yang jelas. Namun, tetap saja terkadang memberikan hasil yang tidak sesuai, seperti penulisan test yang tidak sesuai keinginan, ataupun pembuatan form yang memiliki tipe input yang kurang sesuai. Saya, memperbaikinya dengan menyesuaikan input type form dengan keperluan saya. 
 
 Kemudian, selama melakukan penulisan ulang dokumentasi, AI sering sekali menambahkan dokumentasi tidak relevan dan mengubah sebagian besar refleksi saya. Oleh karena itu, saya harus mengembalikan perubahan yang dibuat oleh AI.
+
+### Tugas 4
+Implementasi authorization and authentication.
+
+#### AI Disclosure
+Saya menggunakan Chatbot Google Gemini selama proses programming untuk membantu dalam hal berikut. Chat Logs: [Chat Logs](https://share.gemini.google/qEAdC0k8SzJS)
+1. Membantu dalam researching perbedaan antara authorization group dan permissions.
+2. Membantu saya dalam melakukan refactor fungsi decorator authorization sebelum adanya user.
+3. Mengklarifikasi best practices dalam authorization.
+
+Pada kali ini, AI membantu saya penuh dalam researching keunggulan dan kekurangan penggunaan perms ataupun groups untuk authorization. AI beberapa kali menjawab pertanyaan saya dengan jawaban yang kontradiktif jawabannya sebelumnya. Dalam hal ini, pengambilan keputusan berada sepenuhnya pada saya. Saya perlu melakukan research lagi secara mandiri untuk menentukan solusi authorization yang menurut saya paling scalable.
