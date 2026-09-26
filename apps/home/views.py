@@ -234,7 +234,7 @@ def get_projects_json(req: HttpRequest) -> HttpResponse:
     return HttpResponse(projects_json, content_type="application/json")
 
 
-def get_project_detail_json(req: HttpRequest, slug: str) -> HttpResponse:
+def get_project_detail_json(_req: HttpRequest, slug: str) -> HttpResponse:
     project = get_object_or_404(get_all_projects(), slug=slug)
 
     project_json = serializers.serialize("json", [project])
