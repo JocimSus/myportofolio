@@ -1,27 +1,30 @@
 import datetime
-import json
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
-from django.core.exceptions import PermissionDenied
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect, render
 
-from .decorators import require_password
+from .decorators import role_required, superuser_required
 from .forms import ExperienceForm, ProjectForm
-from .models import Project
-from .selectors import get_all_experiences_by_start_date, get_all_projects
+from .selectors import (
+    get_all_experiences_by_start_date,
+    get_experience_by_id,
+    get_profile_data,
+    get_project_by_id,
+    get_project_by_slug,
+    get_projects,
+)
 
 
-# Create your views here.
 def profile(req: HttpRequest) -> HttpResponse:
     last_login = req.COOKIES.get("last_login", "Belum ada sesi login")
-    res = get_profile_json(req)
+    res = get_profile_data()
     ctx = {
-        **json.loads(res.content.decode("utf-8")),
+        **res,
         "last_login": last_login,
     }
 
@@ -42,7 +45,8 @@ def experience(req: HttpRequest) -> HttpResponse:
     return render(req, "home/experience.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@superuser_required
 def create_experience(req: HttpRequest) -> HttpResponse:
     form = ExperienceForm(req.POST or None)
 
@@ -57,11 +61,10 @@ def create_experience(req: HttpRequest) -> HttpResponse:
     return render(req, "home/experience_form.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["editor"])
 def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
-    experience = get_object_or_404(
-        get_all_experiences_by_start_date(), pk=experience_id
-    )
+    experience = get_experience_by_id(experience_id)
     form = ExperienceForm(req.POST or None, instance=experience)
 
     if req.method == "POST" and form.is_valid():
@@ -76,11 +79,10 @@ def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
     return render(req, "home/experience_form.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@superuser_required
 def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
-    experience = get_object_or_404(
-        get_all_experiences_by_start_date(), pk=experience_id
-    )
+    experience = get_experience_by_id(experience_id)
 
     if req.method == "POST":
         experience.delete()
@@ -107,10 +109,13 @@ def projects(req: HttpRequest) -> HttpResponse:
 
 
 def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
-    project = get_object_or_404(get_all_projects(), slug=slug)
+    res = get_project_detail_json(req, slug)
+
+    projects = serializers.deserialize("json", res.content.decode("utf-8"))
+    projects = [project.object for project in projects]
 
     ctx = {
-        "project": project,
+        "project": projects[0],
         "slug": slug,
     }
 
@@ -118,11 +123,8 @@ def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
-@require_password
+@superuser_required
 def create_project(req: HttpRequest) -> HttpResponse:
-    if not req.user.is_superuser:
-        raise PermissionDenied
-
     form = ProjectForm(req.POST or None)
 
     if req.method == "POST" and form.is_valid():
@@ -136,9 +138,10 @@ def create_project(req: HttpRequest) -> HttpResponse:
     return render(req, "home/project_form.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["editor"])
 def update_project(req: HttpRequest, slug: str) -> HttpResponse:
-    project = get_object_or_404(get_all_projects(), slug=slug)
+    project = get_project_by_slug(slug)
     form = ProjectForm(req.POST or None, instance=project)
 
     if req.method == "POST" and form.is_valid():
@@ -153,9 +156,10 @@ def update_project(req: HttpRequest, slug: str) -> HttpResponse:
     return render(req, "home/project_form.html", ctx)
 
 
-@require_password
+@login_required(login_url="/login/")
+@superuser_required
 def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
-    project = get_object_or_404(get_all_projects(), pk=project_id)
+    project = get_project_by_id(project_id)
 
     if req.method == "POST":
         project.delete()
@@ -167,7 +171,7 @@ def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
 
 @login_required(login_url="/login/")
 def toggle_star(request, project_id):
-    project = get_object_or_404(Project, pk=project_id)
+    project = get_project_by_id(project_id)
 
     if request.method == "POST":
         if request.user in project.starred_by.all():
@@ -213,6 +217,7 @@ def login_user(req: HttpRequest) -> HttpResponse:
     return render(req, "home/login.html", ctx)
 
 
+@login_required(login_url="/login/")
 def logout_user(req: HttpRequest) -> HttpResponse:
     logout(req)
     res = redirect("home:profile")
@@ -223,10 +228,7 @@ def logout_user(req: HttpRequest) -> HttpResponse:
 # API
 def get_projects_json(req: HttpRequest) -> HttpResponse:
     title_query = req.GET.get("title", "").strip()
-    projects = get_all_projects()
-
-    if title_query:
-        projects = projects.filter(title__icontains=title_query)
+    projects = get_projects(title_query=title_query)
 
     projects_json = serializers.serialize(
         "json", projects, use_natural_foreign_keys=True
@@ -234,8 +236,8 @@ def get_projects_json(req: HttpRequest) -> HttpResponse:
     return HttpResponse(projects_json, content_type="application/json")
 
 
-def get_project_detail_json(req: HttpRequest, slug: str) -> HttpResponse:
-    project = get_object_or_404(get_all_projects(), slug=slug)
+def get_project_detail_json(_req: HttpRequest, slug: str) -> HttpResponse:
+    project = get_project_by_slug(slug)
 
     project_json = serializers.serialize("json", [project])
     return HttpResponse(project_json, content_type="application/json")
@@ -246,28 +248,3 @@ def get_experiences_json(_req: HttpRequest) -> HttpResponse:
 
     experiences_json = serializers.serialize("json", experiences)
     return HttpResponse(experiences_json, content_type="application/json")
-
-
-def get_profile_json(_req: HttpRequest) -> HttpResponse:
-    data = {
-        "npm": "2506602694",
-        "study_program": "Ilmu Komputer - S1",
-        "bio": (
-            "a passionate computer science student at Universitas Indonesia. "
-            "I love exploring new technologies and applying them to solve real-world problems."
-        ),
-        "interests": [
-            "Web Development",
-            "System Design",
-            "Operating Systems",
-            "Cloud Infrastructure",
-            "Web Development",
-        ],
-        "experience_truncated": [
-            "Winner of RISTEK Hackathon 2026",
-            "Vice Lead of IT Dev OH Fasilkom 2026",
-            "Member of RISTEK Web Development",
-        ],
-    }
-
-    return JsonResponse(data)
