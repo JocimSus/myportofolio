@@ -132,7 +132,7 @@ class ProjectViewTest(TestCase):
 
 class ProjectFormViewTest(TestCase):
     def setUp(self):
-        self.editor_group = Group.objects.create(name="Editor")
+        self.editor_group = Group.objects.create(name="editor")
 
         self.superuser = User.objects.create_superuser(
             username="superuser", email="superuser@mail.com", password="password123"
@@ -215,7 +215,7 @@ class ProjectFormViewTest(TestCase):
 
 class ExperienceFormViewTest(TestCase):
     def setUp(self):
-        self.editor_group = Group.objects.create(name="Editor")
+        self.editor_group = Group.objects.create(name="editor")
 
         self.superuser = User.objects.create_superuser(
             username="superuser", email="superuser@mail.com", password="password123"
@@ -293,7 +293,7 @@ class ExperienceFormViewTest(TestCase):
 
 class RoleAuthorizationTest(TestCase):
     def setUp(self):
-        self.editor_group = Group.objects.create(name="Editor")
+        self.editor_group = Group.objects.create(name="editor")
 
         self.regular_user = User.objects.create_user(
             username="regular_user", password="password123"
