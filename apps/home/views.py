@@ -7,6 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from .decorators import role_required, superuser_required
 from .forms import ExperienceForm, ProjectForm
@@ -133,6 +134,27 @@ def create_project(req: HttpRequest) -> HttpResponse:
         "form": form,
     }
     return render(req, "home/project_form.html", ctx)
+
+
+@login_required(login_url="/login/")
+@require_POST
+@superuser_required
+def create_project_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan proyek."},
+            status=403,
+        )
+
+    form = ProjectForm(request.POST)
+    if form.is_valid():
+        project = form.save()
+        return JsonResponse(
+            {"message": "Proyek berhasil ditambahkan.", "pk": str(project.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 
 @login_required(login_url="/login/")
