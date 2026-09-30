@@ -1,1 +1,25 @@
-/* Landing Page */
+/* Toast Styling */
+.toast-hidden {
+  opacity: 0;
+  transform: translateY(120%);
+}
+
+.toast-show {
+  opacity: 1;
+  transform: translateY(0%);
+}
+
+.toast-success {
+  border-left-width: 4px;
+  border-left-color: #22c55e;
+}
+
+.toast-error {
+  border-left-width: 4px;
+  border-left-color: #ef4444;
+}
+
+.toast-normal {
+  border-left-width: 4px;
+  border-left-color: var(--color-secondary-300);
+}

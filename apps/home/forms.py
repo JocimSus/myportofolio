@@ -1,7 +1,9 @@
 from typing import ClassVar
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.forms import ModelForm, Textarea, TextInput, URLInput
+from django.utils.html import strip_tags
 
 from .models import Experience, Project
 
@@ -17,10 +19,22 @@ class ProjectForm(ModelForm):
             self.initial["technologies"] = ", ".join(self.instance.technologies)
 
     def clean_technologies(self) -> list[str]:
-        data = self.cleaned_data.get("technologies", "")
+        data = strip_tags(self.cleaned_data.get("technologies", ""))
         if isinstance(data, str):
             return [tech.strip() for tech in data.split(",") if tech.strip()]
         return data
+
+    def clean_title(self):
+        title = strip_tags(self.cleaned_data.get("title", "")).strip()
+        if not title:
+            raise ValidationError("Nama proyek tidak boleh hanya berisi tag HTML.")
+        return title
+
+    def clean_description(self):
+        description = strip_tags(self.cleaned_data.get("description", "")).strip()
+        if not description:
+            raise ValidationError("Deskripsi proyek tidak boleh hanya berisi tag HTML.")
+        return description
 
     technologies = forms.CharField(
         required=False,
