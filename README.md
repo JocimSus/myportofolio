@@ -136,11 +136,14 @@ Ensure you have the following tools installed on your development machine:
    uv run python manage.py migrate
    ```
 
-5. **Start the development server with Tailwind**:
+5. **Install Tailwind**:
+  ```bash
+  python manage.py tailwind install
+  ```
+
+6. **Start the development server**:
    ```bash
    uv run python manage.py tailwind dev
-   # or
-   uv run python manage.py runserver 127.0.0.1:8000
    ```
 
 ---
@@ -168,11 +171,14 @@ Ensure you have the following tools installed on your development machine:
    python manage.py migrate
    ```
 
-5. **Start the development server**:
+5. **Install Tailwind**:
+  ```bash
+  python manage.py tailwind install
+  ```
+
+6. **Start the development server**:
    ```bash
    python manage.py tailwind dev
-   # or
-   python manage.py runserver 127.0.0.1:8000
    ```
 
 The application will be accessible at:
