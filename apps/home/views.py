@@ -5,8 +5,9 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from .decorators import role_required, superuser_required
 from .forms import ExperienceForm, ProjectForm
@@ -16,7 +17,7 @@ from .selectors import (
     get_profile_data,
     get_project_by_id,
     get_project_by_slug,
-    get_projects,
+    get_projects_with_stars,
 )
 
 
@@ -94,15 +95,12 @@ def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
 
 # Project
 def projects(req: HttpRequest) -> HttpResponse:
-    res = get_projects_json(req)
-
-    projects = serializers.deserialize("json", res.content.decode("utf-8"))
-    projects = [project.object for project in projects]
     title_query = req.GET.get("title", "").strip()
 
     ctx = {
         "projects": projects,
         "title_query": title_query,
+        "form": ProjectForm(),
     }
 
     return render(req, "home/projects.html", ctx)
@@ -136,6 +134,27 @@ def create_project(req: HttpRequest) -> HttpResponse:
         "form": form,
     }
     return render(req, "home/project_form.html", ctx)
+
+
+@login_required(login_url="/login/")
+@require_POST
+@superuser_required
+def create_project_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan proyek."},
+            status=403,
+        )
+
+    form = ProjectForm(request.POST)
+    if form.is_valid():
+        project = form.save()
+        return JsonResponse(
+            {"message": "Proyek berhasil ditambahkan.", "pk": str(project.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 
 @login_required(login_url="/login/")
@@ -226,14 +245,11 @@ def logout_user(req: HttpRequest) -> HttpResponse:
 
 
 # API
-def get_projects_json(req: HttpRequest) -> HttpResponse:
+def get_projects_json(req: HttpRequest) -> JsonResponse:
     title_query = req.GET.get("title", "").strip()
-    projects = get_projects(title_query=title_query)
 
-    projects_json = serializers.serialize(
-        "json", projects, use_natural_foreign_keys=True
-    )
-    return HttpResponse(projects_json, content_type="application/json")
+    projects_data = get_projects_with_stars(title_query=title_query, user=req.user)
+    return JsonResponse(projects_data, safe=False)
 
 
 def get_project_detail_json(_req: HttpRequest, slug: str) -> HttpResponse:
