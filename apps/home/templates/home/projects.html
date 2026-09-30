@@ -34,15 +34,15 @@
         {% endif %}
       </div>
       <!-- Loading State -->
-      <div id="loading" class="hidden text-center text-primary-100 mt-8">
+      <div id="loading" class="hidden text-center text-primary-100 mt-2">
         <p class="text-lg">Loading projects...</p>
       </div>
       <!-- Error State -->
-      <div id="error" class="hidden text-center text-tertiary-100 mt-8">
+      <div id="error" class="hidden text-center text-tertiary-100 mt-2">
         <p class="text-lg">Failed to load projects.</p>
       </div>
       <!-- Empty State -->
-      <div id="empty" class="hidden text-center text-primary-100 mt-8">
+      <div id="empty" class="hidden text-center text-primary-100 mt-2">
         <p class="text-lg">No projects added yet or found.</p>
       </div>
       <div id="grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
@@ -51,6 +51,8 @@
   <script>
     const BASE_PROJECTS_ENDPOINT = "{% url 'home:get_projects_json' %}";
     const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+    const SEARCH_DEBOUNCE_DELAY = 300;
+    let searchDebounceTimer;
     let projectsAbortController;
 
     const loadingState = document.getElementById('loading');
@@ -209,13 +211,29 @@
         }
     }
 
-    if (searchForm) {
-        searchForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            fetchProjects(searchInput ? searchInput.value.trim() : "");
+    const searchProjects = (q) => {
+        const query = q ? q.value.trim() : "";
+        fetchProjects(query);
+    };
+
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            clearTimeout(searchDebounceTimer);
+
+            searchDebounceTimer = setTimeout(() => {
+                searchProjects(searchInput);
+            }, SEARCH_DEBOUNCE_DELAY);
         });
     }
 
-    fetchProjects(searchInput ? searchInput.value.trim() : "");
+    if (searchForm) {
+        searchForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            clearTimeout(searchDebounceTimer);
+            searchProjects(searchInput);
+        });
+    }
+
+    searchProjects(searchInput);
   </script>
 {% endblock %}
