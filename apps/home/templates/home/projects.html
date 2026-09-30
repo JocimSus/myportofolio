@@ -26,11 +26,12 @@
           </button>
         </form>
         {% if user.is_superuser %}
-          <a href="{% url "home:create_project" %}"
-             class="ml-auto bg-secondary-300 text-neutral-200 py-2 px-3 rounded-lg shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-2">
+          <button type="button"
+                  class="ml-auto bg-secondary-300 text-neutral-200 py-2 px-3 rounded-lg shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-2"
+                  popovertarget="add-project-modal">
             <i class="fa-solid fa-plus"></i>
             <span class="font-bold">Add Project</span>
-          </a>
+          </button>
         {% endif %}
       </div>
       <!-- Loading State -->
@@ -48,6 +49,9 @@
       <div id="grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
     </section>
   </main>
+  {% if user.is_superuser %}
+    {% include "home/components/project_form_modal.html" %}
+  {% endif %}
   <script>
     const BASE_PROJECTS_ENDPOINT = "{% url 'home:get_projects_json' %}";
     const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
@@ -175,6 +179,10 @@
         `;
 
         return articleElement;
+    }
+
+    function closeProjectModal() {
+        document.getElementById("add-project-modal").hidePopover();
     }
 
     async function fetchProjects(searchQuery = "") {

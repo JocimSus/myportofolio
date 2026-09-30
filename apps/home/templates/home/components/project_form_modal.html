@@ -1,0 +1,53 @@
+<dialog id="add-project-modal"
+        popover="auto"
+        aria-modal="true"
+        aria-labelledby="add-project-title"
+        class="m-auto p-0 bg-transparent shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-lg w-[calc(100%-2rem)]">
+  <div class="relative bg-neutral-100 rounded-xl p-6 text-neutral-100 shadow-2xl">
+    <button type="button"
+            popovertarget="add-project-modal"
+            popovertargetaction="hide"
+            aria-label="Close add project modal"
+            class="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-lg text-neutral-400 hover:bg-primary-100 hover:text-neutral-100 text-xl font-bold transition-colors cursor-pointer">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div class="flex items-center gap-3 mb-6 text-primary-100">
+      <i class="fa-solid fa-file text-lg"></i>
+      <h2 id="add-project-title" class="text-xl font-bold">Add New Project</h2>
+    </div>
+    <form method="post"
+          action="{% url 'home:create_project' %}"
+          class="flex flex-col">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="w-full flex flex-col gap-2 mb-5 text-left form-w-full">
+          <label for="{{ field.id_for_label }}"
+                 class="text-sm font-medium text-primary-100">
+            {{ field.label }}
+          </label>
+          <div class="w-full rounded-lg text-primary-800 border border-primary-100 bg-neutral-200 text-sm transition focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-800">
+            {{ field }}
+          </div>
+          {% if field.help_text %}
+            <p class="text-xs text-neutral-500 mt-0.5">{{ field.help_text }}</p>
+          {% endif %}
+          {% for error in field.errors %}
+            <p class="text-red-400 text-sm">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      <div class="flex items-center justify-end gap-3 pt-4 mt-2 border-t border-neutral-300">
+        <button type="button"
+                popovertarget="add-project-modal"
+                popovertargetaction="hide"
+                class="bg-black py-2.5 px-4 rounded-lg text-neutral-100 font-bold text-sm hover:opacity-90 transition cursor-pointer">
+          Batal
+        </button>
+        <button type="submit"
+                class="bg-secondary-100 py-2.5 px-4 rounded-lg text-neutral-100 font-bold text-sm hover:opacity-90 transition cursor-pointer">
+          Tambah Project
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>

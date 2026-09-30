@@ -99,6 +99,7 @@ def projects(req: HttpRequest) -> HttpResponse:
     ctx = {
         "projects": projects,
         "title_query": title_query,
+        "form": ProjectForm(),
     }
 
     return render(req, "home/projects.html", ctx)
