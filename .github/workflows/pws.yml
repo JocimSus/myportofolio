@@ -22,4 +22,4 @@ jobs:
       env:
         PWS_URL: ${{ secrets.PWS_URL }}
       run: |
-        git push --force https://${{ secrets.PWS_USERNAME }}:${{ secrets.PWS_PASSWORD }}@pws.cs.ui.ac.id/${{ secrets.PWS_USERNAME }}/myportofolio main:master
+        git push --force https://${{ secrets.PWS_USERNAME }}:${{ secrets.PWS_PASSWORD }}@pws.cs.ui.ac.id/${{ secrets.PWS_USERNAME }}/portofolio main
