@@ -9,7 +9,8 @@
       <h1 class="text-4xl font-bold">what I've done.</h1>
       <div class="bg-tertiary-600 w-3/4 h-0.5 rounded-full my-10"></div>
       <div class="flex flex-col w-3/4 mb-10">
-        <form method="get"
+        <form id="project-search-form"
+              method="get"
               action="{% url 'home:projects' %}"
               class="flex gap-2 mb-4 w-full">
           <input type="search"
@@ -32,54 +33,189 @@
           </a>
         {% endif %}
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {% for project in projects %}
-          <article class="relative bg-neutral-200 shadow-xl rounded-lg p-6 mb-4 min-w-75">
-            <span class="flex justify-between items-center">
-              <h3 class="text-xl font-bold text-gray-800">{{ project.title }}</h3>
-              <p class="text-xs font-bold text-secondary-100 border-2 border-secondary-100 p-2 rounded-full">
-                {{ project.get_category_display }}
-              </p>
-            </span>
-            {% if project.thumbnail %}
-              <div class="relative my-4 rounded-lg p-1">
-                <img src="{{ project.thumbnail }}"
-                     alt="{{ project.title }}"
-                     class="w-full h-48 object-cover rounded-md select-none pointer-events-none" />
-                <div class="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none rounded-md"></div>
-              </div>
-            {% endif %}
-            <p class="mb-8">{{ project.description }}</p>
-            {% if project.technologies %}
-              <div class="flex flex-wrap gap-2 my-4">
-                {% for tech in project.technologies %}
-                  <span class="text-xs font-semibold px-3 py-1 bg-tertiary-100 text-neutral-100 rounded-full shadow-sm">{{ tech }}</span>
-                {% endfor %}
-              </div>
-            {% endif %}
-            <div class="mb-2">{% include "home/components/project_star.html" with project=project %}</div>
-            <div class="flex gap-2">
-              {% if project.slug %}
-                <a href="{% url 'home:project_detail' project.slug %}"
-                   class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit">
-                  <i class="hidden! md:inline! fa-solid fa-newspaper text-neutral-200"></i>
-                  <span class="text-neutral-200 text-lg font-bold font-inter">View Project</span>
-                </a>
-              {% endif %}
-              {% if user.is_superuser %}
-                {% include "home/components/project_delete_modal.html" with project=project %}
-              {% endif %}
-            </div>
-            <div class="absolute bottom-0 left-0 right-0 h-3 bg-secondary-300 rounded-b-lg z-10"></div>
-          </article>
-        {% empty %}
-          {% if title_query %}
-            <p class="text-center font-light text-primary-100 col-span-full">No projects found for "{{ title_query }}".</p>
-          {% else %}
-            <p class="text-center font-light text-primary-100 col-span-full">No projects added yet.</p>
-          {% endif %}
-        {% endfor %}
+      <!-- Loading State -->
+      <div id="loading" class="hidden text-center text-primary-100 mt-8">
+        <p class="text-lg">Loading projects...</p>
       </div>
+      <!-- Error State -->
+      <div id="error" class="hidden text-center text-tertiary-100 mt-8">
+        <p class="text-lg">Failed to load projects.</p>
+      </div>
+      <!-- Empty State -->
+      <div id="empty" class="hidden text-center text-primary-100 mt-8">
+        <p class="text-lg">No projects added yet or found.</p>
+      </div>
+      <div id="grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
     </section>
   </main>
+  <script>
+    const BASE_PROJECTS_ENDPOINT = "{% url 'home:get_projects_json' %}";
+    const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+    let projectsAbortController;
+
+    const loadingState = document.getElementById('loading');
+    const errorState = document.getElementById('error');
+    const emptyState = document.getElementById('empty');
+    const gridContainer = document.getElementById('grid');
+    const searchForm = document.getElementById('project-search-form');
+    const searchInput = document.getElementById('search-bar');
+
+    function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+        loadingState.classList.toggle('hidden', !showLoading);
+        errorState.classList.toggle('hidden', !showError);
+        emptyState.classList.toggle('hidden', !showEmpty);
+        gridContainer.classList.toggle('hidden', !showGrid);
+    }
+
+    function buildProjectCardElement(item) {
+        const project = item.fields;
+        const projectId = item.pk;
+
+        const articleElement = document.createElement('article');
+        articleElement.className = 'relative bg-neutral-200 shadow-xl rounded-lg p-6 mb-4 min-w-75 flex flex-col justify-between';
+
+        // Category Badges
+        const categoryHtml = project.category
+            ? `<p class="text-xs font-bold text-secondary-100 border-2 border-secondary-100 p-2 rounded-full capitalize">${project.category}</p>`
+            : '';
+
+        // Project Images
+        const thumbnailHtml = project.thumbnail 
+            ? `<div class="relative my-4 rounded-lg p-1">
+                 <img src="${project.thumbnail}" alt="${project.title}" class="w-full h-48 object-cover rounded-md select-none pointer-events-none" />
+                 <div class="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none rounded-md"></div>
+               </div>`
+            : '';
+
+        // Project Tech
+        const techList = Array.isArray(project.technologies) 
+            ? project.technologies 
+            : (project.technologies ? String(project.technologies).split(',').map(t => t.trim()) : []);
+            
+        const techHtml = techList.length > 0
+            ? `<div class="flex flex-wrap gap-2 my-4">
+                 ${techList.map(tech => `<span class="text-xs font-semibold px-3 py-1 bg-tertiary-100 text-neutral-100 rounded-full shadow-sm">${tech}</span>`).join('')}
+               </div>`
+            : '';
+
+        // View Project Button
+        let detailUrlHtml = '';
+        if (project.slug) {
+            const detailUrl = "{% url 'home:project_detail' 'SLUG_PLACEHOLDER' %}".replace('SLUG_PLACEHOLDER', project.slug);
+            detailUrlHtml = `
+                <a href="${detailUrl}" class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit text-neutral-200">
+                    <i class="hidden md:inline fa-solid fa-newspaper"></i>
+                    <span class="text-neutral-200 text-lg font-bold font-inter">View Project</span>
+                </a>`;
+        } else if (project.project_url) {
+            detailUrlHtml = `
+                <a href="${project.project_url}" target="_blank" rel="noopener noreferrer" class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit text-neutral-200">
+                    <i class="hidden md:inline fa-solid fa-arrow-up-right-from-square"></i>
+                    <span class="text-neutral-200 text-lg font-bold font-inter">View Project</span>
+                </a>`;
+        }
+
+        // Delete Button
+        const deleteUrl = "{% url 'home:delete_project' '00000000-0000-0000-0000-000000000000' %}"
+            .replace('00000000-0000-0000-0000-000000000000', projectId);
+
+        const deleteHtml = IS_SUPERUSER 
+            ? `<form method="post" action="${deleteUrl}" class="inline-block">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-600 text-white py-2 px-3 rounded-lg shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out cursor-pointer font-bold flex items-center gap-2" onclick="return confirm('Yakin ingin menghapus project ini?');">
+                    <i class="fa-solid fa-trash"></i>
+                    <span>Delete</span>
+                </button>
+            </form>`
+            : '';
+
+        // Star Button
+        const starUrl = "{% url 'home:toggle_star' '00000000-0000-0000-0000-000000000000' %}"
+            .replace('00000000-0000-0000-0000-000000000000', projectId);
+
+        const isStarredClass = project.is_starred ? "bg-amber-500 text-white" : "bg-neutral-300 text-neutral-800 hover:bg-neutral-400";
+        const starIcon = project.is_starred ? "fa-solid fa-star text-yellow-300" : "fa-regular fa-star";
+        const starTitle = project.star_count > 0 
+            ? `Dibintangi oleh ${project.starred_by_names}` 
+            : "Jadilah yang pertama memberi star";
+
+        const starHtml = `
+            <form method="post" action="${starUrl}" class="star-form inline-block">
+                {% csrf_token %}
+                <button type="submit" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 ${isStarredClass}" title="${starTitle}">
+                    <i class="${starIcon}"></i>
+                    <span>${project.is_starred ? 'Starred' : 'Star'}</span>
+                    <span class="bg-neutral-800/10 px-2 py-0.5 rounded-full text-xs">${project.star_count}</span>
+                </button>
+            </form>
+        `;
+
+        articleElement.innerHTML = `
+            <div>
+                <span class="flex justify-between items-center mb-2">
+                    <h3 class="text-xl font-bold text-gray-800">${project.title}</h3>
+                    ${categoryHtml}
+                </span>
+                ${thumbnailHtml}
+                <p class="mb-4 text-neutral-700">${project.description}</p>
+                ${techHtml}
+            </div>
+            <div>
+                <div class="mb-4">
+                    ${starHtml}
+                </div>
+                <div class="flex gap-2 items-center">
+                    ${detailUrlHtml}
+                    ${deleteHtml}
+                </div>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 h-3 bg-secondary-300 rounded-b-lg z-10"></div>
+        `;
+
+        return articleElement;
+    }
+
+    async function fetchProjects(searchQuery = "") {
+        if (projectsAbortController) projectsAbortController.abort();
+        projectsAbortController = new AbortController();
+
+        try {
+            displayPageSection({ showLoading: true });
+            
+            const url = searchQuery ? `${BASE_PROJECTS_ENDPOINT}?title=${encodeURIComponent(searchQuery)}` : BASE_PROJECTS_ENDPOINT;
+            
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json' },
+                signal: projectsAbortController.signal,
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch data');
+
+            const projectData = await response.json();
+
+            if (projectData.length === 0) {
+                displayPageSection({ showEmpty: true });
+            } else {
+                gridContainer.innerHTML = '';
+                projectData.forEach(item => {
+                    gridContainer.appendChild(buildProjectCardElement(item));
+                });
+                displayPageSection({ showGrid: true });
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            console.error('Error loading projects:', error);
+            displayPageSection({ showError: true });
+        }
+    }
+
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetchProjects(searchInput ? searchInput.value.trim() : "");
+        });
+    }
+
+    fetchProjects(searchInput ? searchInput.value.trim() : "");
+  </script>
 {% endblock %}

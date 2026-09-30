@@ -1,3 +1,6 @@
+from typing import Any
+
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 
@@ -29,6 +32,43 @@ def get_project_by_slug(slug: str) -> Project:
 
 def get_project_by_id(project_id) -> Project:
     return get_object_or_404(get_all_projects(), pk=project_id)
+
+
+def get_projects_with_stars(
+    title_query: str = "", user: AbstractBaseUser | AnonymousUser | None = None
+) -> list[dict[str, Any]]:
+    projects = Project.objects.prefetch_related("starred_by").all()
+
+    if title_query:
+        projects = projects.filter(title__icontains=title_query)
+
+    is_authenticated = user is not None and user.is_authenticated
+
+    data = []
+    for project in projects:
+        starred_users = project.starred_by.all()
+        is_starred = user in starred_users if is_authenticated else False
+        starred_by_names = ", ".join([u.username for u in starred_users])
+
+        data.append(
+            {
+                "pk": str(project.id),
+                "fields": {
+                    "title": project.title,
+                    "slug": project.slug,
+                    "description": project.description,
+                    "thumbnail": project.thumbnail,
+                    "project_url": project.project_url,
+                    "technologies": project.technologies,
+                    "category": project.category,
+                    "is_starred": is_starred,
+                    "starred_by_names": starred_by_names,
+                    "star_count": starred_users.count(),
+                },
+            }
+        )
+
+    return data
 
 
 def get_profile_data() -> dict:
