@@ -15,7 +15,8 @@
       <i class="fa-solid fa-file text-lg"></i>
       <h2 id="add-project-title" class="text-xl font-bold">Add New Project</h2>
     </div>
-    <form method="post"
+    <form id="project-form"
+          method="post"
           action="{% url 'home:create_project' %}"
           class="flex flex-col">
       {% csrf_token %}
