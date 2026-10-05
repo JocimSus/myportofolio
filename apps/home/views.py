@@ -4,7 +4,6 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.core import serializers
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
@@ -12,8 +11,8 @@ from django.views.decorators.http import require_POST
 from .decorators import role_required, superuser_required
 from .forms import ExperienceForm, ProjectForm
 from .selectors import (
-    get_all_experiences_by_start_date,
     get_experience_by_id,
+    get_experiences_dict,
     get_profile_data,
     get_project_by_id,
     get_project_by_slug,
@@ -35,15 +34,9 @@ def profile(req: HttpRequest) -> HttpResponse:
 
 # Experience
 def experience(req: HttpRequest) -> HttpResponse:
-    res = get_experiences_json(req)
-
-    experiences = serializers.deserialize("json", res.content.decode("utf-8"))
-    experiences = [exp.object for exp in experiences]
-
     ctx = {
-        "experiences": experiences,
+        "form": ExperienceForm(),
     }
-
     return render(req, "home/experience.html", ctx)
 
 
@@ -61,6 +54,27 @@ def create_experience(req: HttpRequest) -> HttpResponse:
         "form": form,
     }
     return render(req, "home/experience_form.html", ctx)
+
+
+@login_required(login_url="/login/")
+@require_POST
+@superuser_required
+def create_experience_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan pengalaman."},
+            status=403,
+        )
+
+    form = ExperienceForm(request.POST)
+    if form.is_valid():
+        experience = form.save()
+        return JsonResponse(
+            {"message": "Pengalaman berhasil ditambahkan.", "pk": str(experience.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 
 @login_required(login_url="/login/")
@@ -82,6 +96,28 @@ def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
+@require_POST
+@role_required(allowed_roles=["editor"])
+def update_experience_ajax(req: HttpRequest, experience_id: str) -> JsonResponse:
+    if not req.user.groups.filter(name="editor").exists() and not req.user.is_superuser:
+        return JsonResponse(
+            {
+                "message": "Hanya editor dan pemilik portofolio yang dapat memperbarui pengalaman."
+            },
+            status=403,
+        )
+
+    experience = get_experience_by_id(experience_id)
+    form = ExperienceForm(req.POST, instance=experience)
+
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"message": "Pengalaman berhasil diperbarui."}, status=200)
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+
+
+@login_required(login_url="/login/")
 @superuser_required
 def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
     experience = get_experience_by_id(experience_id)
@@ -92,6 +128,15 @@ def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
         return redirect("home:experience")
 
     return redirect("home:experience")
+
+
+@login_required(login_url="/login/")
+@require_POST
+@superuser_required
+def delete_experience_ajax(_req: HttpRequest, experience_id: str) -> JsonResponse:
+    experience = get_experience_by_id(experience_id)
+    experience.delete()
+    return JsonResponse({"message": "Pengalaman berhasil dihapus."}, status=200)
 
 
 # Project
@@ -297,14 +342,13 @@ def get_projects_json(req: HttpRequest) -> JsonResponse:
     return JsonResponse(projects_data, safe=False)
 
 
-def get_project_detail_json(_req: HttpRequest, slug: str) -> HttpResponse:
+def get_project_detail_json(_req: HttpRequest, slug: str) -> JsonResponse:
     project = get_project_by_slug_dict(slug)
 
     return JsonResponse(project)
 
 
-def get_experiences_json(_req: HttpRequest) -> HttpResponse:
-    experiences = get_all_experiences_by_start_date()
+def get_experiences_json(_req: HttpRequest) -> JsonResponse:
+    experiences = get_experiences_dict()
 
-    experiences_json = serializers.serialize("json", experiences)
-    return HttpResponse(experiences_json, content_type="application/json")
+    return JsonResponse(experiences, safe=False)

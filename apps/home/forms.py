@@ -147,12 +147,6 @@ class ExperienceForm(ModelForm):
             raise ValidationError("Tanggal mulai pengalaman tidak boleh kosong.")
         return start_date
 
-    def clean_end_date(self):
-        end_date = self.cleaned_data.get("end_date")
-        if not end_date:
-            raise ValidationError("Tanggal selesai pengalaman tidak boleh kosong.")
-        return end_date
-
     class Meta:
         model = Experience
         fields: ClassVar[list] = [

@@ -12,6 +12,25 @@ def get_all_experiences_by_start_date() -> QuerySet[Experience]:
     return Experience.objects.order_by("start_date")
 
 
+def get_experiences_dict() -> list[dict[str, Any]]:
+    experiences = get_all_experiences_by_start_date()
+    return [
+        {
+            "pk": str(exp.id),
+            "fields": {
+                "title": exp.title,
+                "description": exp.description,
+                "category": exp.category,
+                "thumbnail": exp.thumbnail,
+                "start_date": exp.start_date.isoformat(),
+                "end_date": exp.end_date.isoformat() if exp.end_date else None,
+                "is_ongoing": exp.is_ongoing,
+            },
+        }
+        for exp in experiences
+    ]
+
+
 def get_experience_by_id(experience_id: str) -> Experience:
     return get_object_or_404(get_all_experiences_by_start_date(), pk=experience_id)
 
