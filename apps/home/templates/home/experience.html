@@ -62,6 +62,7 @@
     const deleteExperienceForm = document.getElementById("delete-experience-form");
     const deleteExperienceModal = document.getElementById("delete-experience-modal");
     const deleteExperienceName = document.getElementById("delete-experience-name");
+    const { escapeHtml, getCookie, getFormErrorMessages } = window.PortfolioUtils;
 
     const displayPageSection = ({
       showLoading = false,
@@ -73,15 +74,6 @@
       errorState.classList.toggle("hidden", !showError);
       emptyState.classList.toggle("hidden", !showEmpty);
       experienceContainer.classList.toggle("hidden", !showExperiences);
-    };
-
-    const escapeHtml = (value) => {
-      return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
     };
 
     const capitalize = (str) => {
@@ -210,21 +202,6 @@
       }
     }
 
-    const getCookie = (name) => {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-            }
-          }
-        }
-        return cookieValue;
-    }
-
     async function saveExperience(event) {
       event.preventDefault();
 
@@ -248,9 +225,7 @@
           showToast('Berhasil', result.message || 'Pengalaman berhasil disimpan!', 'success');
           fetchExperiences();
         } else {
-          const errorMessages = result.errors
-            ? Object.values(result.errors).flat().map(error => error.message)
-            : [result.message || `Terjadi kesalahan (status ${response.status}).`];
+          const errorMessages = getFormErrorMessages(result, `Terjadi kesalahan (status ${response.status}).`);
           showToast('Gagal menyimpan pengalaman', errorMessages.join('\r\n'), 'error');
         }
       } catch (error) {
