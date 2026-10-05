@@ -1,19 +1,11 @@
-<p class="experience-status">
-  <button type="button"
-          class="flex bg-red-500 py-2 px-3 rounded-lg items-center gap-2 shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out w-fit cursor-pointer"
-          popovertarget="delete-project-{{ project.id }}">
-    <i class="hidden! md:inline! fa-solid fa-trash-can text-neutral-200"></i>
-    <span class="text-neutral-200 text-lg font-bold font-inter">Delete Project</span>
-  </button>
-</p>
-<dialog id="delete-project-{{ project.id }}"
+<dialog id="delete-project-modal"
         popover="auto"
         aria-modal="true"
-        aria-labelledby="delete-project-title-{{ project.id }}"
+        aria-labelledby="delete-project-title"
         class="m-auto p-0 bg-transparent shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-md w-[calc(100%-2rem)]">
   <div class="relative bg-neutral-100 rounded-xl p-6 text-neutral-100 shadow-2xl">
     <button type="button"
-            popovertarget="delete-project-{{ project.id }}"
+            popovertarget="delete-project-modal"
             popovertargetaction="hide"
             aria-label="Close delete project modal"
             class="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-lg text-neutral-400 hover:bg-primary-100 hover:text-neutral-100 text-xl font-bold transition-colors cursor-pointer">
@@ -23,27 +15,24 @@
       <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100">
         <i class="fa-solid fa-triangle-exclamation text-lg text-white"></i>
       </div>
-      <h2 id="delete-project-title-{{ project.id }}"
-          class="text-xl font-bold text-primary-100">
-        Delete Project?
-      </h2>
+      <h2 id="delete-project-title" class="text-xl font-bold text-primary-100">Delete Project?</h2>
     </div>
     <p class="text-sm text-black mb-6">
       Are you sure you want to delete
-      <strong class="font-semibold text-primary-100">{{ project.title }}</strong>?
+      <strong id="delete-project-name" class="font-semibold text-primary-100">this project</strong>?
       This action cannot be undone.
     </p>
-    <form method="post" action="{% url 'home:delete_project' project.id %}">
+    <form id="delete-project-form" method="post" action="">
       {% csrf_token %}
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-neutral-800">
         <button type="button"
-                popovertarget="delete-project-{{ project.id }}"
+                popovertarget="delete-project-modal"
                 popovertargetaction="hide"
                 class="px-4 py-2 text-sm font-semibold text-neutral-100 bg-secondary-100 rounded-lg hover:bg-secondary-300 transition-colors duration-300 ease-in-out shadow-md cursor-pointer">
           Cancel
         </button>
         <button type="submit"
-                class="px-4 py-2 text-sm font-semibold text-neutral-100 bg-red-600 rounded-lg shadow-md hover:*:bg-red-800 transition-colors duration-300 ease-in-out cursor-pointer">
+                class="px-4 py-2 text-sm font-semibold text-neutral-100 bg-red-600 rounded-lg shadow-md hover:bg-red-800 transition-colors duration-300 ease-in-out cursor-pointer">
           Delete
         </button>
       </div>
