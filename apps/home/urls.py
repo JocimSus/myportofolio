@@ -21,7 +21,6 @@ urlpatterns = [
     ),
     # Project
     path("projects/", views.projects, name="projects"),
-    path("projects/<slug:slug>/", views.project_detail, name="project_detail"),
     path("projects/add/", views.create_project, name="create_project"),
     path("projects/add-ajax/", views.create_project_ajax, name="create_project_ajax"),
     path("projects/<slug:slug>/edit/", views.update_project, name="update_project"),
@@ -40,6 +39,7 @@ urlpatterns = [
         views.toggle_star,
         name="toggle_star",
     ),
+    path("projects/<slug:slug>/", views.project_detail, name="project_detail"),
     # Auth
     path("register/", views.register, name="register"),
     path("login/", views.login_user, name="login"),

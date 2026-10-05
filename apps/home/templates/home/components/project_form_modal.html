@@ -19,8 +19,7 @@
     </div>
     <form id="project-form"
           method="post"
-          action="{% if slug %}{% url 'home:update_project_ajax' slug %}{% else %}{% url 'home:create_project' %}{% endif %}"
-          enctype="multipart/form-data"
+          action="{% if slug %}{% url 'home:update_project_ajax' slug %}{% else %}{% url 'home:create_project_ajax' %}{% endif %}"
           class="flex flex-col">
       {% csrf_token %}
       {% for field in form %}
