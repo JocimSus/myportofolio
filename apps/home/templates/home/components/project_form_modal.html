@@ -7,17 +7,20 @@
     <button type="button"
             popovertarget="add-project-modal"
             popovertargetaction="hide"
-            aria-label="Close add project modal"
+            aria-label="Close project modal"
             class="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-lg text-neutral-400 hover:bg-primary-100 hover:text-neutral-100 text-xl font-bold transition-colors cursor-pointer">
       <i class="fa-solid fa-xmark"></i>
     </button>
     <div class="flex items-center gap-3 mb-6 text-primary-100">
-      <i class="fa-solid fa-file text-lg"></i>
-      <h2 id="add-project-title" class="text-xl font-bold">Add New Project</h2>
+      <i class="fa-solid {% if slug %}fa-pen-to-square{% else %}fa-file{% endif %} text-lg"></i>
+      <h2 id="add-project-title" class="text-xl font-bold">
+        {% if slug %}Update Project{% else %}Add New Project{% endif %}
+      </h2>
     </div>
     <form id="project-form"
           method="post"
-          action="{% url 'home:create_project' %}"
+          action="{% if slug %}{% url 'home:update_project_ajax' slug %}{% else %}{% url 'home:create_project' %}{% endif %}"
+          enctype="multipart/form-data"
           class="flex flex-col">
       {% csrf_token %}
       {% for field in form %}
@@ -35,6 +38,8 @@
           {% for error in field.errors %}
             <p class="text-red-400 text-sm">{{ error }}</p>
           {% endfor %}
+          <p id="error-{{ field.name }}"
+             class="text-red-400 text-sm hidden field-error"></p>
         </div>
       {% endfor %}
       <div class="flex items-center justify-end gap-3 pt-4 mt-2 border-t border-neutral-300">
@@ -46,7 +51,7 @@
         </button>
         <button type="submit"
                 class="bg-secondary-100 py-2.5 px-4 rounded-lg text-neutral-100 font-bold text-sm hover:opacity-90 transition cursor-pointer">
-          Tambah Project
+          {% if slug %}Simpan Perubahan{% else %}Tambah Project{% endif %}
         </button>
       </div>
     </form>

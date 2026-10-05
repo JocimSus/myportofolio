@@ -17,6 +17,7 @@ from .selectors import (
     get_profile_data,
     get_project_by_id,
     get_project_by_slug,
+    get_project_by_slug_dict,
     get_projects_with_stars,
 )
 
@@ -98,25 +99,17 @@ def projects(req: HttpRequest) -> HttpResponse:
     title_query = req.GET.get("title", "").strip()
 
     ctx = {
-        "projects": projects,
         "title_query": title_query,
         "form": ProjectForm(),
     }
-
     return render(req, "home/projects.html", ctx)
 
 
 def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
-    res = get_project_detail_json(req, slug)
-
-    projects = serializers.deserialize("json", res.content.decode("utf-8"))
-    projects = [project.object for project in projects]
-
     ctx = {
-        "project": projects[0],
         "slug": slug,
+        "form": ProjectForm(),
     }
-
     return render(req, "home/project_detail.html", ctx)
 
 
@@ -173,6 +166,28 @@ def update_project(req: HttpRequest, slug: str) -> HttpResponse:
         "project": project,
     }
     return render(req, "home/project_form.html", ctx)
+
+
+@login_required(login_url="/login/")
+@require_POST
+@role_required(allowed_roles=["editor"])
+def update_project_ajax(req: HttpRequest, slug: str) -> JsonResponse:
+    if not req.user.groups.filter(name="editor").exists() and not req.user.is_superuser:
+        return JsonResponse(
+            {
+                "message": "Hanya editor dan pemilik portofolio yang dapat memperbarui proyek."
+            },
+            status=403,
+        )
+
+    project = get_project_by_slug(slug)
+    form = ProjectForm(req.POST, instance=project)
+
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"message": "Proyek berhasil diperbarui."}, status=200)
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 
 @login_required(login_url="/login/")
@@ -253,10 +268,9 @@ def get_projects_json(req: HttpRequest) -> JsonResponse:
 
 
 def get_project_detail_json(_req: HttpRequest, slug: str) -> HttpResponse:
-    project = get_project_by_slug(slug)
+    project = get_project_by_slug_dict(slug)
 
-    project_json = serializers.serialize("json", [project])
-    return HttpResponse(project_json, content_type="application/json")
+    return JsonResponse(project)
 
 
 def get_experiences_json(_req: HttpRequest) -> HttpResponse:

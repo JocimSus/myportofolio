@@ -1,6 +1,6 @@
 {% extends 'home/base.html' %}
 
-{% load tech_icons auth_helper %}
+{% load auth_helper %}
 
 {% block meta %}
   <title>Project Details</title>
@@ -12,49 +12,216 @@
         <i class="fa-solid fa-arrow-left mr-2"></i>
         Back to projects
       </a>
-      <h1 class="text-5xl font-bold mt-8">{{ project.title }}</h1>
-      {% if project.thumbnail %}
+      <!-- Loading State -->
+      <div id="loading" class="hidden text-center text-primary-100 mt-2">
+        <p class="text-lg">Loading project detail...</p>
+      </div>
+      <!-- Error State -->
+      <div id="error" class="hidden text-center text-tertiary-100 mt-2">
+        <p class="text-lg">Failed to load project detail.</p>
+      </div>
+      <!-- Empty State -->
+      <div id="empty" class="hidden text-center text-primary-100 mt-2">
+        <p class="text-lg">Project not found.</p>
+      </div>
+      <div id="project-detail"></div>
+    </section>
+  </main>
+  {% if user|has_group:"editor" %}
+    {% include "home/components/project_form_modal.html" %}
+  {% endif %}
+  <script>
+    const BASE_PROJECT_DETAIL_ENDPOINT = "{% url 'home:get_project_detail_json' slug %}";
+    const UPDATE_PROJECT_ENDPOINT = "{% url 'home:update_project_ajax' slug %}";
+    
+    const isEditor = {{ user|has_group:"editor"|yesno:"true,false" }};
+
+    const loadingState = document.getElementById("loading");
+    const errorState = document.getElementById("error");
+    const emptyState = document.getElementById("empty");
+    const projectDetailContainer = document.getElementById("project-detail");
+    const projectForm = document.getElementById("project-form");
+
+    const displayPageSection = ({
+      showLoading = false,
+      showError = false,
+      showEmpty = false,
+      showProjectDetail = false
+    }) => {
+      loadingState.classList.toggle("hidden", !showLoading);
+      errorState.classList.toggle("hidden", !showError);
+      emptyState.classList.toggle("hidden", !showEmpty);
+      projectDetailContainer.classList.toggle("hidden", !showProjectDetail);
+    };
+
+    const escapeHtml = (value) => {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    };
+
+    const closeProjectModal = () => {
+      document.getElementById('add-project-modal').hidePopover();
+    };
+
+    const buildProjectDetailHTML = (p) => {
+      const project = p.fields;
+      const projectId = p.pk;
+
+      const titleHTML = `<h1 class="text-5xl font-bold mt-8">${escapeHtml(project.title)}</h1>`;
+
+      const thumbnailHTML = project.thumbnail ? `
         <div class="relative my-8 rounded-lg overflow-hidden">
-          <img src="{{ project.thumbnail }}"
-               alt="{{ project.title }}"
-               class="w-full max-h-125 object-cover select-none pointer-events-none" />
+          <img src="${escapeHtml(project.thumbnail)}" alt="${escapeHtml(project.title)}" class="w-full max-h-125 object-cover select-none pointer-events-none" />
           <div class="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none"></div>
         </div>
-      {% endif %}
-      <p class="my-4 text-lg font-semibold">{{ project.description }}</p>
-      {% if project.project_url %}
-        <a href="{{ project.project_url }}"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="flex ml-auto bg-secondary-300 py-5 px-7 rounded-lg items-center gap-2 shadow-xl hover:bg-secondary-400 hover:scale-105 transition-all duration-300 ease-in-out w-fit">
+      ` : '';
+
+      const descriptionHTML = `<p class="my-4 text-lg font-semibold">${escapeHtml(project.description)}</p>`;
+
+      const projectLinkHTML = project.project_url ? `
+        <a href="${escapeHtml(project.project_url)}" target="_blank" rel="noopener noreferrer" class="flex ml-auto bg-secondary-300 py-5 px-7 rounded-lg items-center gap-2 shadow-xl hover:bg-secondary-400 hover:scale-105 transition-all duration-300 ease-in-out w-fit">
           <i class="fa-solid fa-link text-neutral-200 text-3xl"></i>
           <span class="text-neutral-200 text-3xl font-bold font-inter">Go to Project</span>
         </a>
-      {% endif %}
-      {% if user|has_group:"editor" %}
-        <a href="{% url 'home:update_project' project.slug %}"
-           class="flex ml-auto mt-2 bg-tertiary-300 py-5 px-7 rounded-lg items-center gap-2 shadow-xl hover:bg-tertiary-400 hover:scale-105 transition-all duration-300 ease-in-out w-fit">
+      ` : '';
+
+      const updateButtonHTML = isEditor ? `
+        <button type="button" class="flex ml-auto mt-2 bg-tertiary-300 py-5 px-7 rounded-lg items-center gap-2 shadow-xl hover:bg-tertiary-400 hover:scale-105 transition-all duration-300 ease-in-out w-fit" popovertarget="add-project-modal">
           <i class="fa-solid fa-pen text-neutral-200 text-lg"></i>
           <span class="text-neutral-200 text-lg font-bold font-inter">Update Project</span>
-        </a>
-      {% endif %}
-      {% if project.technologies %}
+        </button>
+      ` : '';
+
+      const technologiesHTML = project.technologies && project.technologies.length > 0 ? `
         <section class="relative z-10 w-full my-16 py-8 md:py-12">
           <div class="mx-auto w-fit max-w-full rounded-2xl bg-white px-5 py-5 text-primary-100 shadow-xl md:rounded-[28px] md:px-10 md:py-7">
             <h2 class="mb-6 text-center text-2xl font-bold leading-none md:mb-8 md:text-4xl">Frameworks</h2>
             <div class="grid grid-cols-2 justify-items-center gap-3 md:flex md:max-w-3xl md:flex-wrap md:justify-center md:gap-6">
-              {% for tech in project.technologies %}
+              ${project.technologies.map(tech => `
                 <div class="flex h-28 w-28 flex-col items-center justify-center rounded-lg border border-primary-100 bg-white px-2 py-3 shadow-[inset_0_2px_10px_rgba(0,0,0,0.14),0_2px_4px_rgba(31,20,92,0.08)] md:h-48 md:w-52 md:rounded-[22px] md:px-6 md:py-7">
-                  <img src="{{ tech|tech_icon_url }}"
-                       alt="{{ tech }}"
-                       class="mb-3 h-11 max-w-19 object-contain md:mb-8 md:h-20 md:max-w-37.5" />
-                  <span class="text-center text-xs font-semibold leading-none text-black md:text-2xl">{{ tech }}</span>
+                  <img src="${escapeHtml(tech.icon_url)}"
+                      alt="${escapeHtml(tech.name)}"
+                      class="mb-3 h-11 max-w-19 object-contain md:mb-8 md:h-20 md:max-w-37.5" />
+                  <span class="text-center text-xs font-semibold leading-none text-black md:text-2xl">${escapeHtml(tech.name)}</span>
                 </div>
-              {% endfor %}
+              `).join('')}
             </div>
           </div>
         </section>
-      {% endif %}
-    </section>
-  </main>
+      ` : '';
+
+      return `
+        ${titleHTML}
+        ${thumbnailHTML}
+        ${descriptionHTML}
+        ${projectLinkHTML}
+        ${updateButtonHTML}
+        ${technologiesHTML}
+      `;
+    }
+
+    const populateForm = (p) => {
+      if (!projectForm) return;
+      const project = p.fields;
+
+      for (const key in project) {
+        const fieldElements = projectForm.elements[key];
+        if (!fieldElements) continue;
+
+        let rawValue = project[key];
+
+        if (Array.isArray(rawValue)) {
+          rawValue = rawValue.map(item => (typeof item === 'object' ? item.name : item));
+        }
+
+        fieldElements.value = rawValue ?? '';
+      }
+    };
+
+    const fetchProjectDetail = async () => {
+      try {
+        displayPageSection({ showLoading: true });
+        
+        const response = await fetch(BASE_PROJECT_DETAIL_ENDPOINT, {
+          headers: { 'Accept': 'application/json' },
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch data');
+
+        const projectData = await response.json();
+
+        if (projectData.length === 0) {
+          displayPageSection({ showEmpty: true });
+        } else {
+          projectDetailContainer.innerHTML = buildProjectDetailHTML(projectData);
+
+          populateForm(projectData);
+
+          displayPageSection({ showProjectDetail: true });
+        }
+      } catch (error) {
+        console.error('Error loading project detail:', error);
+        displayPageSection({ showError: true });
+      }
+    }
+
+    const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const updateProject = async (event) => {
+        event.preventDefault();
+
+        const submitButton = projectForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(UPDATE_PROJECT_ENDPOINT, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: new FormData(projectForm),
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                projectForm.reset();
+                closeProjectModal();
+                showToast('Berhasil', 'Proyek baru berhasil diperbarui!', 'success');
+
+                await fetchProjectDetail();
+            } else {
+                const errorMessages = result.errors
+                    ? Object.values(result.errors).flat().map(error => error.message)
+                    : [result.message || `Terjadi kesalahan (status ${response.status}).`];
+                showToast('Gagal memperbarui proyek', errorMessages.join('\r\n'), 'error');
+            }
+        } catch (error) {
+            console.error('Error updating project:', error);
+            showToast('Gagal memperbarui proyek', 'Tidak dapat terhubung ke server. Silakan coba lagi.', 'error');
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    if (projectForm) {
+        projectForm.addEventListener('submit', updateProject);
+    }
+
+    fetchProjectDetail();
+  </script>
 {% endblock %}

@@ -5,6 +5,7 @@ from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 
 from .models import Experience, Project
+from .templatetags import tech_icons
 
 
 def get_all_experiences_by_start_date() -> QuerySet[Experience]:
@@ -28,6 +29,31 @@ def get_projects(title_query: str = "") -> QuerySet[Project]:
 
 def get_project_by_slug(slug: str) -> Project:
     return get_object_or_404(get_all_projects(), slug=slug)
+
+
+def get_project_by_slug_dict(slug: str) -> dict[str, Any]:
+    project = get_object_or_404(get_all_projects(), slug=slug)
+
+    tech_url = [
+        {
+            "name": tech,
+            "icon_url": tech_icons.tech_icon_url(tech),
+        }
+        for tech in (project.technologies or [])
+    ]
+
+    return {
+        "pk": str(project.id),
+        "fields": {
+            "title": project.title,
+            "slug": project.slug,
+            "description": project.description,
+            "thumbnail": project.thumbnail,
+            "project_url": project.project_url,
+            "technologies": tech_url,
+            "category": project.category,
+        },
+    }
 
 
 def get_project_by_id(project_id) -> Project:
