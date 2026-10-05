@@ -440,3 +440,15 @@ Saya menggunakan Chatbot Google Gemini selama proses programming untuk membantu 
 3. Mengklarifikasi best practices dalam authorization.
 
 Pada kali ini, AI membantu saya penuh dalam researching keunggulan dan kekurangan penggunaan perms ataupun groups untuk authorization. AI beberapa kali menjawab pertanyaan saya dengan jawaban yang kontradiktif jawabannya sebelumnya. Dalam hal ini, pengambilan keputusan berada sepenuhnya pada saya. Saya perlu melakukan research lagi secara mandiri untuk menentukan solusi authorization yang menurut saya paling scalable.
+
+### Tugas 5
+1. Debouncing berfungsi untuk menunda jalan suatu fungsi selama delay masih berlaku. Teknik ini penting untuk mengurangi pemanggilan API yang dilakukan suatu user dan juga meringankan beban re-rendering clientside. Apabila tidak ada debouncing, setiap huruf yang diketik oleh user akan memanggil API.
+2. Fungsi `await` digunakan untuk functions yang asynchronous. Keyword tersebut berguna untuk menghentikan jalan suatu fungsi sehingga `Prmoise` oleh fetch selesai dan didapatkan. Jika tidak dipanggil dengan keyword `await` maka data dari fetch menjadi `undefined` sehingga menghasilkan error ketika diproses, dan juga hasil dari fetch tersebut masih berbentuk objek `Promise` yang tidak bisa dioperasikan.
+3. XSS adalah serangan yang menjalankan suatu script akibat sebuah input field yang tidak diamankan. Alhasil, script tersebut akan dijalankan oleh website sendiri dengan permissions website tersebut setiap kali terjadi rendering. Data melalui AJAX/JS lebih rentan karena tidak memiliki sanitisasi input built-in seperti pada template Django yang memiliki fitur auto escaping, dan juga ketika memanggil innerHTM atau sejenisnya, JS akan mengevaluasi HTML tersebut tanpa pengecekan apapun sehingga script bisa otomatis berjalan.
+
+#### AI Disclosure
+Saya menggunakan Chatbot Google Gemini selama proses programming untuk membantu dalam hal berikut.
+1. Membantu saya dalam researching syntax JS dalam melakukan fetching.
+2. Membantu saya dalam menentukan refactor kode JS yang efektif.
+
+Pada kali ini, AI sering sekali menyarankan perubahan yang tidak sesuai dengan konteks halaman sebenarnya. AI terkadang memberikan suatu id yang belum ada, ataupun method yang tidak ada di JS. Saya melakukan mitigasi dengan mengerjakan sebagian besar scripting JS secara manual untuk memastikan kode dapaat berjalan.
