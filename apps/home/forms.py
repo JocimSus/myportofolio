@@ -36,6 +36,24 @@ class ProjectForm(ModelForm):
             raise ValidationError("Deskripsi proyek tidak boleh hanya berisi tag HTML.")
         return description
 
+    def clean_category(self):
+        category = strip_tags(self.cleaned_data.get("category", "")).strip()
+        if not category:
+            raise ValidationError("Kategori proyek tidak boleh hanya berisi tag HTML.")
+        return category
+
+    def clean_thumbnail(self):
+        thumbnail = strip_tags(self.cleaned_data.get("thumbnail", "")).strip()
+        if not thumbnail:
+            raise ValidationError("Thumbnail proyek tidak boleh hanya berisi tag HTML.")
+        return thumbnail
+
+    def clean_project_url(self):
+        project_url = strip_tags(self.cleaned_data.get("project_url", "")).strip()
+        if not project_url:
+            raise ValidationError("URL proyek tidak boleh hanya berisi tag HTML.")
+        return project_url
+
     technologies = forms.CharField(
         required=False,
         widget=TextInput(
@@ -93,6 +111,42 @@ class ProjectForm(ModelForm):
 
 
 class ExperienceForm(ModelForm):
+    def clean_title(self):
+        title = strip_tags(self.cleaned_data.get("title", "")).strip()
+        if not title:
+            raise ValidationError("Nama pengalaman tidak boleh hanya berisi tag HTML.")
+        return title
+
+    def clean_description(self):
+        description = strip_tags(self.cleaned_data.get("description", "")).strip()
+        if not description:
+            raise ValidationError(
+                "Deskripsi pengalaman tidak boleh hanya berisi tag HTML."
+            )
+        return description
+
+    def clean_category(self):
+        category = strip_tags(self.cleaned_data.get("category", "")).strip()
+        if not category:
+            raise ValidationError(
+                "Kategori pengalaman tidak boleh hanya berisi tag HTML."
+            )
+        return category
+
+    def clean_thumbnail(self):
+        thumbnail = strip_tags(self.cleaned_data.get("thumbnail", "")).strip()
+        if not thumbnail:
+            raise ValidationError(
+                "Thumbnail pengalaman tidak boleh hanya berisi tag HTML."
+            )
+        return thumbnail
+
+    def clean_start_date(self):
+        start_date = self.cleaned_data.get("start_date")
+        if not start_date:
+            raise ValidationError("Tanggal mulai pengalaman tidak boleh kosong.")
+        return start_date
+
     class Meta:
         model = Experience
         fields: ClassVar[list] = [

@@ -33,6 +33,7 @@
     <div class="absolute inset-0 pointer-events-none opacity-20 bg-repeat -z-10"
          style="background-image: url('{% static 'img/seamless-paper-texture.webp' %}')"></div>
     {% include "home/header.html" %}
+    <script src="{% static 'home/js/common.js' %}"></script>
     {% block content %}{% endblock %}
     {% include "home/footer.html" %}
     {% include "home/components/toast.html" %}

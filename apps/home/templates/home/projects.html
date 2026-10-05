@@ -51,12 +51,15 @@
   </main>
   {% if user.is_superuser %}
     {% include "home/components/project_form_modal.html" %}
+    {% include "home/components/project_delete_modal.html" %}
   {% endif %}
   <script>
     const BASE_PROJECTS_ENDPOINT = "{% url 'home:get_projects_json' %}";
     const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
     const SEARCH_DEBOUNCE_DELAY = 300;
     const CREATE_PROJECT_ENDPOINT = "{% url 'home:create_project_ajax' %}";
+    const DELETE_PROJECT_ENDPOINT = "{% url 'home:delete_project_ajax' '00000000-0000-0000-0000-000000000000' %}";
+    const TOGGLE_STAR_ENDPOINT = "{% url 'home:toggle_star_ajax' '00000000-0000-0000-0000-000000000000' %}";
     
     let searchDebounceTimer;
     let projectsAbortController;
@@ -68,21 +71,16 @@
     const searchForm = document.getElementById('project-search-form');
     const searchInput = document.getElementById('search-bar');
     const projectForm = document.getElementById('project-form');
+    const deleteProjectForm = document.getElementById('delete-project-form');
+    const deleteProjectModal = document.getElementById('delete-project-modal');
+    const deleteProjectName = document.getElementById('delete-project-name');
+    const { escapeHtml, getCookie, getFormErrorMessages } = window.PortfolioUtils;
 
     function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
         loadingState.classList.toggle('hidden', !showLoading);
         errorState.classList.toggle('hidden', !showError);
         emptyState.classList.toggle('hidden', !showEmpty);
         gridContainer.classList.toggle('hidden', !showGrid);
-    }
-
-    function escapeHtml(value) {
-        return String(value ?? '')
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;')
-            .replaceAll("'", '&#39;');
     }
 
     function buildProjectCardElement(item) {
@@ -134,22 +132,17 @@
         }
 
         // Delete Button
-        const deleteUrl = "{% url 'home:delete_project' '00000000-0000-0000-0000-000000000000' %}"
-            .replace('00000000-0000-0000-0000-000000000000', projectId);
+        const deleteUrl = DELETE_PROJECT_ENDPOINT.replace('00000000-0000-0000-0000-000000000000', projectId);
 
         const deleteHtml = IS_SUPERUSER 
-            ? `<form method="post" action="${escapeHtml(deleteUrl)}" class="inline-block">
-                {% csrf_token %}
-                <button type="submit" class="bg-red-600 text-white py-2 px-3 rounded-lg shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out cursor-pointer font-bold flex items-center gap-2" onclick="return confirm('Yakin ingin menghapus project ini?');">
+            ? `<button type="button" class="delete-btn bg-red-600 text-white py-2 px-3 rounded-lg shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out cursor-pointer font-bold flex items-center gap-2" data-project-title="${escapeHtml(project.title)}" data-delete-url="${escapeHtml(deleteUrl)}" popovertarget="delete-project-modal">
                     <i class="fa-solid fa-trash"></i>
                     <span>Delete</span>
-                </button>
-            </form>`
+            </button>`
             : '';
 
         // Star Button
-        const starUrl = "{% url 'home:toggle_star' '00000000-0000-0000-0000-000000000000' %}"
-            .replace('00000000-0000-0000-0000-000000000000', projectId);
+        const starUrl = TOGGLE_STAR_ENDPOINT.replace('00000000-0000-0000-0000-000000000000', projectId);
 
         const isStarredClass = project.is_starred ? "bg-amber-500 text-white" : "bg-neutral-300 text-neutral-800 hover:bg-neutral-400";
         const starIcon = project.is_starred ? "fa-solid fa-star text-yellow-300" : "fa-regular fa-star";
@@ -160,10 +153,10 @@
         const starHtml = `
             <form method="post" action="${escapeHtml(starUrl)}" class="star-form inline-block">
                 {% csrf_token %}
-                <button type="submit" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 ${isStarredClass}" title="${escapeHtml(starTitle)}">
-                    <i class="${starIcon}"></i>
-                    <span>${project.is_starred ? 'Starred' : 'Star'}</span>
-                    <span class="bg-neutral-800/10 px-2 py-0.5 rounded-full text-xs">${project.star_count}</span>
+                <button type="submit" class="star-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 ${isStarredClass}" title="${escapeHtml(starTitle)}">
+                    <i class="star-icon ${starIcon}"></i>
+                    <span class="star-label">${project.is_starred ? 'Starred' : 'Star'}</span>
+                    <span class="star-count bg-neutral-800/10 px-2 py-0.5 rounded-full text-xs">${project.star_count}</span>
                 </button>
             </form>
         `;
@@ -254,23 +247,6 @@
         });
     }
 
-    // Get CSRF Token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // Send form data to server
     async function addProject(event) {
         event.preventDefault();
 
@@ -291,9 +267,7 @@
                 showToast('Berhasil', 'Proyek baru berhasil ditambahkan!', 'success');
                 fetchProjects(searchInput.value.trim());
             } else {
-                const errorMessages = result.errors
-                    ? Object.values(result.errors).flat().map(error => error.message)
-                    : [result.message || `Terjadi kesalahan (status ${response.status}).`];
+                const errorMessages = getFormErrorMessages(result, `Terjadi kesalahan (status ${response.status}).`);
                 showToast('Gagal menambahkan proyek', errorMessages.join('\r\n'), 'error');
             }
         } catch (error) {
@@ -304,9 +278,118 @@
         }
     }
 
+    async function deleteProject(event) {
+        event.preventDefault();
+
+        const submitButton = deleteProjectForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(deleteProjectForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                deleteProjectModal.hidePopover();
+                showToast('Berhasil', 'Proyek berhasil dihapus!', 'success');
+                
+                fetchProjects(searchInput ? searchInput.value.trim() : '');
+            } else {
+                showToast('Gagal', result.message || 'Gagal menghapus proyek.', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting project:', error);
+            showToast('Gagal', 'Terjadi kesalahan koneksi. Silakan coba lagi.', 'error');
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    async function handleToggleStar(formElement) {
+        const submitBtn = formElement.querySelector('.star-btn');
+        const starIcon = formElement.querySelector('.star-icon');
+        const starLabel = formElement.querySelector('.star-label');
+        const starCount = formElement.querySelector('.star-count');
+
+        if (!submitBtn) return;
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch(formElement.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (response.status === 401 || response.redirected) {
+                window.location.href = "/login/";
+                return;
+            }
+
+            if (!response.ok) {
+                if (typeof showToast === 'function') {
+                    showToast('Gagal', 'Terjadi kesalahan saat memperbarui star.', 'error');
+                }
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.is_starred) {
+                submitBtn.className = "star-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 bg-amber-500 text-white";
+                starIcon.className = "star-icon fa-solid fa-star text-yellow-300";
+                starLabel.textContent = "Starred";
+            } else {
+                submitBtn.className = "star-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 bg-neutral-300 text-neutral-800 hover:bg-neutral-400";
+                starIcon.className = "star-icon fa-regular fa-star";
+                starLabel.textContent = "Star";
+            }
+
+            starCount.textContent = data.star_count;
+
+        } catch (error) {
+            console.error('Error toggling star:', error);
+            if (typeof showToast === 'function') {
+                showToast('Gagal', 'Terjadi kesalahan saat memperbarui star.', 'error');
+            }
+        } finally {
+            submitBtn.disabled = false;
+        }
+    }
+
     if (projectForm) {
         projectForm.addEventListener('submit', addProject);
     }
+
+    if (deleteProjectForm) {
+        deleteProjectForm.addEventListener('submit', deleteProject);
+    }
+
+    gridContainer.addEventListener('submit', (e) => {
+        if (e.target && e.target.classList.contains('star-form')) {
+            e.preventDefault();
+            handleToggleStar(e.target);
+        }
+    });
+
+    gridContainer.addEventListener('click', (e) => {
+        const deleteBtn = e.target.closest('.delete-btn');
+        if (deleteBtn) {
+            const projectTitle = deleteBtn.dataset.projectTitle;
+            const deleteUrl = deleteBtn.dataset.deleteUrl;
+
+            if (deleteProjectForm) deleteProjectForm.action = deleteUrl;
+            if (deleteProjectName) deleteProjectName.textContent = projectTitle;
+        }
+    });
 
     searchProjects(searchInput);
   </script>

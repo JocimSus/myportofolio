@@ -11,66 +11,294 @@
     <section class="flex flex-col justify-center items-center py-16">
       <h1 class="text-4xl font-bold">my experience.</h1>
       <div class="bg-tertiary-600 w-3/4 h-0.5 rounded-full my-8"></div>
-      {% comment %} Background Container {% endcomment %}
-      <div class="w-full bg-neutral-100 p-6 md:p-8 rounded-2xl shadow-xl divide-y divide-neutral-300">
-        {% for exp in experiences %}
-          <article class="py-6 first:pt-0 last:pb-0 flex flex-col md:flex-row items-start gap-4 md:gap-5">
-            <div class="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-xl p-0.5 bg-linear-to-br from-primary-100 via-secondary-100 to-tertiary-100 shadow-sm">
-              <div class="w-full h-full rounded-lg overflow-hidden bg-neutral-300 flex items-center justify-center p-2">
-                {% if exp.thumbnail %}
-                  <img src="{{ exp.thumbnail }}"
-                       alt="{{ exp.title }}"
-                       class="w-full h-full object-cover" />
-                {% else %}
-                  <i class="fa-solid fa-briefcase text-neutral-400 text-2xl"></i>
-                {% endif %}
-              </div>
-            </div>
-            {% comment %} Details {% endcomment %}
-            <div class="flex-1 min-w-0 w-full flex flex-col">
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-1">
-                <h2 class="font-bold text-xl md:text-2xl text-neutral-900 leading-snug">{{ exp.title }}</h2>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-300 text-secondary-300 w-fit">
-                  {{ exp.get_category_display }}
-                </span>
-              </div>
-              {% comment %} Time Range {% endcomment %}
-              <p class="text-xs md:text-sm font-medium text-neutral-700 mt-1">
-                {{ exp.start_date|date:"M Y" }} -
-                {% if exp.is_ongoing %}
-                  <span class="text-tertiary-100 font-semibold">Present</span>
-                {% else %}
-                  {{ exp.end_date|date:"M Y" }}
-                {% endif %}
-              </p>
-              {% comment %} Description {% endcomment %}
-              <p class="text-sm text-neutral-800 mt-3 leading-relaxed mb-4">{{ exp.description }}</p>
-              {% comment %} Action Buttons {% endcomment %}
-              {% if user|has_group:"editor" %}
-                <div class="flex items-center gap-2 mt-4 md:mt-0">
-                  <a href="{% url 'home:update_experience' exp.pk %}"
-                     class="text-sm px-3 py-2 rounded-lg bg-secondary-100 text-neutral-100 font-semibold hover:bg-secondary-200 transition-all duration-300">
-                    <i class="fa-solid fa-pen"></i>
-                    <span class="ml-2">Edit</span>
-                  </a>
-                  {% if user.is_superuser %}
-                    {% include "home/components/experience_delete_modal.html" with experience=exp %}
-                  {% endif %}
-                </div>
-              {% endif %}
-            </div>
-          </article>
-        {% empty %}
-          <p class="text-center font-light text-primary-100 py-6">No experiences added yet.</p>
-        {% endfor %}
+      <!-- Loading State -->
+      <div id="loading" class="hidden text-center text-primary-100 mt-2">
+        <p class="text-lg">Loading projects...</p>
       </div>
+      <!-- Error State -->
+      <div id="error" class="hidden text-center text-tertiary-100 mt-2">
+        <p class="text-lg">Failed to load projects.</p>
+      </div>
+      <!-- Empty State -->
+      <div id="empty" class="hidden text-center text-primary-100 mt-2">
+        <p class="text-lg">No projects added yet or found.</p>
+      </div>
+      <div id="experience-container"
+           class="w-full bg-neutral-100 p-6 md:p-8 rounded-2xl shadow-xl divide-y divide-neutral-300"></div>
     </section>
-    <div class="bottom-0 flex justify-end">
-      <a href="{% url 'home:create_experience' %}"
-         class="items-center px-5 py-3 rounded-xl text-neutral-200 text-2xl bg-secondary-300 hover:bg-secondary-500 shadow-lg hover:shadow-xl transition-all duration-300">
-        <i class="fa-solid fa-plus"></i>
-        <span class="ml-2 font-bold">Add Experience</span>
-      </a>
-    </div>
+    {% if user.is_superuser %}
+      <div class="bottom-0 flex justify-end">
+        <button type="button"
+                popovertarget="add-experience-modal"
+                class="items-center px-5 py-3 rounded-xl text-neutral-200 text-2xl bg-secondary-300 hover:bg-secondary-500 shadow-lg hover:shadow-xl transition-all duration-300">
+          <i class="fa-solid fa-plus"></i>
+          <span class="ml-2 font-bold">Add Experience</span>
+        </button>
+      </div>
+    {% endif %}
   </main>
+  {% if user.is_superuser %}
+    {% include "home/components/experience_delete_modal.html" %}
+  {% endif %}
+  {% if user|has_group:"editor" %}
+    {% include "home/components/experience_form_modal.html" %}
+  {% endif %}
+  <script>
+    const BASE_EXPERIENCE_ENDPOINT = "{% url 'home:get_experiences_json' %}";
+    const CREATE_EXPERIENCE_ENDPOINT = "{% url 'home:create_experience_ajax' %}";
+    const UPDATE_EXPERIENCE_ENDPOINT = "{% url 'home:update_experience_ajax' '00000000-0000-0000-0000-000000000000' %}";
+    const DELETE_EXPERIENCE_ENDPOINT = "{% url 'home:delete_experience_ajax' '00000000-0000-0000-0000-000000000000' %}";
+    
+    const isSuperuser = {{ user.is_superuser|yesno:"true,false" }};
+    const isEditor = {{ user|has_group:"editor"|yesno:"true,false" }}; 
+    const isOngoing = {{ exp.is_ongoing|yesno:"true,false" }};
+
+    const loadingState = document.getElementById("loading");
+    const errorState = document.getElementById("error");
+    const emptyState = document.getElementById("empty");
+    const experienceContainer = document.getElementById("experience-container");
+    const experienceForm = document.getElementById("experience-form");
+
+    const deleteExperienceForm = document.getElementById("delete-experience-form");
+    const deleteExperienceModal = document.getElementById("delete-experience-modal");
+    const deleteExperienceName = document.getElementById("delete-experience-name");
+    const { escapeHtml, getCookie, getFormErrorMessages } = window.PortfolioUtils;
+
+    const displayPageSection = ({
+      showLoading = false,
+      showError = false,
+      showEmpty = false,
+      showExperiences = false
+    }) => {
+      loadingState.classList.toggle("hidden", !showLoading);
+      errorState.classList.toggle("hidden", !showError);
+      emptyState.classList.toggle("hidden", !showEmpty);
+      experienceContainer.classList.toggle("hidden", !showExperiences);
+    };
+
+    const capitalize = (str) => {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+
+    const closeExperienceModal = () => {
+      document.getElementById('add-experience-modal').hidePopover();
+    };
+
+    const closeDeleteExperienceModal = () => {
+      if (deleteExperienceModal) deleteExperienceModal.hidePopover();
+    };
+
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      return isNaN(date) ? dateStr : date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    };
+
+    const buildExperienceHTML = (item) => {
+      const exp = item.fields || item;
+      const experienceId = item.pk || item.id;
+
+      const thumbnailHTML = exp.thumbnail 
+        ? `<img src="${escapeHtml(exp.thumbnail)}" alt="${escapeHtml(exp.title)}" class="w-full h-full object-cover" />`
+        : `<i class="fa-solid fa-briefcase text-neutral-400 text-2xl"></i>`;
+
+      const titleHTML = `<h2 class="font-bold text-xl md:text-2xl text-neutral-900 leading-snug">${escapeHtml(exp.title)}</h2>`;
+
+      const categoryHTML = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-300 text-secondary-300 w-fit">${capitalize(escapeHtml(exp.category))}</span>`;
+
+      const startDateStr = formatDate(exp.start_date);
+      const endDateStr = exp.is_ongoing ? 'Present' : formatDate(exp.end_date);
+
+      const dateHTML = exp.is_ongoing
+        ? `<p class="text-xs md:text-sm font-medium text-neutral-700 mt-1">${escapeHtml(startDateStr)} - <span class="text-tertiary-100 font-semibold">Present</span></p>`
+        : `<p class="text-xs md:text-sm font-medium text-neutral-700 mt-1">${escapeHtml(startDateStr)} - ${escapeHtml(endDateStr)}</p>`;
+
+      const descriptionHTML = `<p class="text-sm text-neutral-800 mt-3 leading-relaxed mb-4">${escapeHtml(exp.description)}</p>`;
+
+      const editUrl = UPDATE_EXPERIENCE_ENDPOINT.replace('00000000-0000-0000-0000-000000000000', experienceId);
+      const deleteUrl = DELETE_EXPERIENCE_ENDPOINT.replace('00000000-0000-0000-0000-000000000000', experienceId);
+
+      const editButtonHTML = isEditor
+        ? `<button type="button" class="edit-btn text-sm px-3 py-2 rounded-lg bg-secondary-100 text-neutral-100 font-semibold hover:bg-secondary-200 transition-all duration-300 flex items-center gap-2 cursor-pointer" data-edit-url="${escapeHtml(editUrl)}" data-exp="${escapeHtml(JSON.stringify(item))}" popovertarget="add-experience-modal">
+            <i class="fa-solid fa-pen"></i>
+            <span>Edit</span>
+          </button>`
+        : '';
+
+      const deleteButtonHTML = isSuperuser
+        ? `<button type="button" class="delete-btn text-sm px-3 py-2 rounded-lg bg-red-600 text-neutral-100 font-semibold hover:bg-red-800 transition-all duration-300 flex items-center gap-2 cursor-pointer" data-experience-title="${escapeHtml(exp.title)}" data-delete-url="${escapeHtml(deleteUrl)}" popovertarget="delete-experience-modal">
+            <i class="fa-solid fa-trash"></i>
+            <span>Delete</span>
+          </button>`
+        : '';
+
+      const articleElement = document.createElement("article");
+      articleElement.className = "py-6 first:pt-0 last:pb-0 flex flex-col md:flex-row items-start gap-4 md:gap-5";
+      articleElement.innerHTML = `
+        <div class="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-xl p-0.5 bg-linear-to-br from-primary-100 via-secondary-100 to-tertiary-100 shadow-sm">
+          <div class="w-full h-full rounded-lg overflow-hidden bg-neutral-300 flex items-center justify-center p-2">
+            ${thumbnailHTML}
+          </div>
+        </div>
+        <div class="flex-1 min-w-0 w-full flex flex-col">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-1">
+            ${titleHTML}
+            ${categoryHTML}
+          </div>
+          ${dateHTML}
+          ${descriptionHTML}
+          <div class="flex items-center gap-2 mt-4 md:mt-0">
+            ${editButtonHTML}
+            ${deleteButtonHTML}
+          </div>
+        </div>
+      `;
+
+      return articleElement;
+    };
+
+    const populateForm = (p) => {
+      if (!experienceForm) return;
+      const experience = p.fields;
+
+      for (const key in experience) {
+        const fieldElements = experienceForm.elements[key];
+        if (!fieldElements) continue;
+
+        let rawValue = experience[key];
+
+        fieldElements.value = rawValue ?? '';
+      }
+    };
+
+    const fetchExperiences = async () => {
+      try {
+        displayPageSection({ showLoading: true });
+        
+        const response = await fetch(BASE_EXPERIENCE_ENDPOINT, {
+          headers: { 'Accept': 'application/json' },
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch data');
+
+        const experienceData = await response.json();
+
+        if (experienceData.length === 0) {
+          displayPageSection({ showEmpty: true });
+        } else {
+          experienceContainer.innerHTML = '';
+          experienceData.forEach(item => {
+              experienceContainer.appendChild(buildExperienceHTML(item));
+          });
+
+          populateForm(experienceData);
+
+          displayPageSection({ showExperiences: true });
+        }
+      } catch (error) {
+        console.error('Error loading experience data:', error);
+        displayPageSection({ showError: true });
+      }
+    }
+
+    async function saveExperience(event) {
+      event.preventDefault();
+
+      const submitButton = experienceForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+
+      try {
+        const response = await fetch(experienceForm.action, {
+          method: 'POST',
+          headers: { 
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: new FormData(experienceForm),
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (response.ok) {
+          experienceForm.reset();
+          closeExperienceModal();
+          showToast('Berhasil', result.message || 'Pengalaman berhasil disimpan!', 'success');
+          fetchExperiences();
+        } else {
+          const errorMessages = getFormErrorMessages(result, `Terjadi kesalahan (status ${response.status}).`);
+          showToast('Gagal menyimpan pengalaman', errorMessages.join('\r\n'), 'error');
+        }
+      } catch (error) {
+        console.error('Error saving experience:', error);
+        showToast('Gagal menyimpan pengalaman', 'Tidak dapat terhubung ke server. Silakan coba lagi.', 'error');
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    async function deleteExperience(event) {
+        event.preventDefault();
+
+        const submitButton = deleteExperienceForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+          const response = await fetch(deleteExperienceForm.action, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCookie('csrftoken'),
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+
+          const result = await response.json().catch(() => ({}));
+
+          if (response.ok) {
+            deleteExperienceForm.reset();
+            closeDeleteExperienceModal();
+            showToast('Berhasil', 'Pengalaman berhasil dihapus!', 'success');
+            fetchExperiences();
+          } else {
+            showToast('Gagal', result.message || 'Gagal menghapus pengalaman.', 'error');
+          }
+        } catch (error) {
+          console.error('Error deleting experience:', error);
+          showToast('Gagal', 'Terjadi kesalahan koneksi. Silakan coba lagi.', 'error');
+        } finally {
+          submitButton.disabled = false;
+        }
+    }
+    
+    if (experienceForm) {
+      experienceForm.addEventListener('submit', saveExperience);
+    }
+
+    if (deleteExperienceForm) {
+      deleteExperienceForm.addEventListener('submit', deleteExperience);
+    }
+
+    experienceContainer.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.edit-btn');
+      if (editBtn) {
+        const editUrl = editBtn.dataset.editUrl;
+        const itemData = JSON.parse(editBtn.dataset.exp);
+
+        if (experienceForm) {
+          experienceForm.action = editUrl;
+          populateForm(itemData);
+        }
+      }
+
+      const deleteBtn = e.target.closest('.delete-btn');
+      if (deleteBtn) {
+        const experienceTitle = deleteBtn.dataset.experienceTitle;
+        const deleteUrl = deleteBtn.dataset.deleteUrl;
+
+        if (deleteExperienceForm) deleteExperienceForm.action = deleteUrl;
+        if (deleteExperienceName) deleteExperienceName.textContent = experienceTitle;
+      }
+    });
+
+    fetchExperiences();
+  </script>
 {% endblock %}
