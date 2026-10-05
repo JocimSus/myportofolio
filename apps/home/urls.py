@@ -35,9 +35,19 @@ urlpatterns = [
         name="delete_project",
     ),
     path(
+        "projects/<uuid:project_id>/delete/ajax/",
+        views.delete_project_ajax,
+        name="delete_project_ajax",
+    ),
+    path(
         "projects/<uuid:project_id>/star/",
         views.toggle_star,
         name="toggle_star",
+    ),
+    path(
+        "projects/<uuid:project_id>/star/ajax/",
+        views.toggle_star_ajax,
+        name="toggle_star_ajax",
     ),
     path("projects/<slug:slug>/", views.project_detail, name="project_detail"),
     # Auth

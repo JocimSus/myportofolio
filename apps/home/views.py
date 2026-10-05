@@ -204,6 +204,15 @@ def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
+@require_POST
+@superuser_required
+def delete_project_ajax(_req: HttpRequest, project_id: int) -> JsonResponse:
+    project = get_project_by_id(project_id)
+    project.delete()
+    return JsonResponse({"message": "Proyek berhasil dihapus."}, status=200)
+
+
+@login_required(login_url="/login/")
 def toggle_star(request, project_id):
     project = get_project_by_id(project_id)
 
@@ -214,6 +223,27 @@ def toggle_star(request, project_id):
             project.starred_by.add(request.user)
 
     return redirect("home:projects")
+
+
+@login_required(login_url="/login/")
+@require_POST
+def toggle_star_ajax(request, project_id):
+    project = get_project_by_id(project_id)
+
+    if request.user in project.starred_by.all():
+        project.starred_by.remove(request.user)
+        is_starred = False
+    else:
+        project.starred_by.add(request.user)
+        is_starred = True
+
+    return JsonResponse(
+        {
+            "message": "Proyek berhasil diberi bintang.",
+            "is_starred": is_starred,
+            "star_count": project.starred_by.count(),
+        }
+    )
 
 
 # Auth
