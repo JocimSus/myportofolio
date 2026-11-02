@@ -1,0 +1,40 @@
+{% load auth_helper %}
+
+<article id="experience-{{ experience.pk }}"
+         class="py-6 first:pt-0 last:pb-0 flex flex-col md:flex-row items-start gap-4 md:gap-5">
+  <div class="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-xl p-0.5 bg-linear-to-br from-primary-100 via-secondary-100 to-tertiary-100 shadow-sm">
+    <div class="w-full h-full rounded-lg overflow-hidden bg-neutral-300 flex items-center justify-center p-2">
+      {% if experience.thumbnail %}
+        <img src="{{ experience.thumbnail }}"
+             alt="{{ experience.title }}"
+             class="w-full h-full object-cover">
+      {% else %}
+        <i class="fa-solid fa-briefcase text-neutral-400 text-2xl"></i>
+      {% endif %}
+    </div>
+  </div>
+  <div class="flex-1 min-w-0 w-full flex flex-col">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-1">
+      <h2 class="font-bold text-xl md:text-2xl text-neutral-900 leading-snug">{{ experience.title }}</h2>
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-300 text-secondary-300 w-fit">{{ experience.get_category_display }}</span>
+    </div>
+    <p class="text-xs md:text-sm font-medium text-neutral-700 mt-1">{{ experience.start_date|date:"M Y" }} - {% if experience.is_ongoing %}<span class="text-tertiary-100 font-semibold">Present</span>{% else %}{{ experience.end_date|date:"M Y" }}{% endif %}</p>
+    <p class="text-sm text-neutral-800 mt-3 leading-relaxed mb-4">{{ experience.description }}</p>
+    {% if user.is_superuser or user|has_group:"editor" %}
+      <div class="flex items-center gap-2 mt-4 md:mt-0">
+        <button type="button"
+                hx-get="{% url 'home:experience_edit_fragment' experience.pk %}"
+                hx-target="#experience-form-container"
+                hx-swap="innerHTML"
+                popovertarget="add-experience-modal"
+                class="text-sm px-3 py-2 rounded-lg bg-secondary-100 text-neutral-100 font-semibold hover:bg-secondary-200 transition-all duration-300 flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-pen"></i><span>Edit</span></button>
+        {% if user.is_superuser %}<button type="button"
+        hx-delete="{% url 'home:delete_experience_ajax' experience.pk %}"
+        hx-target="closest article"
+        hx-swap="outerHTML"
+        hx-confirm="Yakin hapus {{ experience.title }}?"
+        class="text-sm px-3 py-2 rounded-lg bg-red-600 text-neutral-100 font-semibold hover:bg-red-800 transition-all duration-300 flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-trash"></i><span>Delete</span></button>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+</article>

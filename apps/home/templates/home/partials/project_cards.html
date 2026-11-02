@@ -1,0 +1,7 @@
+{% for project in projects %}
+  {% include "home/partials/project_card.html" %}
+{% empty %}
+  <div class="col-span-full text-center text-primary-100 mt-2">
+    <p class="text-lg">No projects added yet or found.</p>
+  </div>
+{% endfor %}

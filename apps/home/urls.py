@@ -8,6 +8,11 @@ urlpatterns = [
     path("", views.profile, name="profile"),
     # Experience
     path("experience/", views.experience, name="experience"),
+    path(
+        "experience/form/fragment/",
+        views.experience_form_fragment,
+        name="experience_form_fragment",
+    ),
     path("experience/add/", views.create_experience, name="create_experience"),
     path(
         "experience/add-ajax/",
@@ -23,6 +28,11 @@ urlpatterns = [
         "experience/<uuid:experience_id>/edit/ajax/",
         views.update_experience_ajax,
         name="update_experience_ajax",
+    ),
+    path(
+        "experience/<uuid:experience_id>/edit/fragment/",
+        views.experience_edit_fragment,
+        name="experience_edit_fragment",
     ),
     path(
         "experience/<uuid:experience_id>/delete/",

@@ -1,0 +1,4 @@
+{% include "home/partials/experience_list.html" %}
+<div id="experience-form-container" hx-swap-oob="innerHTML">
+  {% include "home/partials/experience_form.html" with form=create_form mode="create" %}
+</div>
