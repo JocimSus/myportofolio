@@ -1,0 +1,62 @@
+{% with project_fields=project.fields %}
+  <article id="project-{{ project.pk }}"
+           class="relative bg-neutral-200 shadow-xl rounded-lg p-6 mb-4 min-w-75 flex flex-col justify-between">
+    <div>
+      <span class="flex justify-between items-center mb-2">
+        <h3 class="text-xl font-bold text-gray-800">{{ project_fields.title }}</h3>
+        {% if project_fields.category %}<p class="text-xs font-bold text-secondary-100 border-2 border-secondary-100 p-2 rounded-full capitalize">{{ project_fields.category }}</p>{% endif %}
+      </span>
+      {% if project_fields.thumbnail %}
+        <div class="relative my-4 rounded-lg p-1">
+          <img src="{{ project_fields.thumbnail }}"
+               alt="{{ project_fields.title }}"
+               class="w-full h-48 object-cover rounded-md select-none pointer-events-none">
+          <div class="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none rounded-md"></div>
+        </div>
+      {% endif %}
+      <p class="mb-4 text-neutral-700">{{ project_fields.description }}</p>
+      {% if project_fields.technologies %}
+        <div class="flex flex-wrap gap-2 my-4">
+          {% for technology in project_fields.technologies %}<span class="text-xs font-semibold px-3 py-1 bg-tertiary-100 text-neutral-100 rounded-full shadow-sm">{{ technology }}</span>{% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <div>
+      <div class="mb-4">
+        <form method="post"
+              action="{% url 'home:toggle_star_ajax' project.pk %}"
+              class="star-form inline-block">
+          {% csrf_token %}
+          <button type="submit"
+                  class="star-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 {% if project_fields.is_starred %}bg-amber-500 text-white{% else %}bg-neutral-300 text-neutral-800 hover:bg-neutral-400{% endif %}"
+                  title="{% if project_fields.star_count %}Dibintangi oleh {{ project_fields.starred_by_names }}{% else %}Jadilah yang pertama memberi star{% endif %}">
+            <i class="star-icon {% if project_fields.is_starred %}fa-solid fa-star text-yellow-300{% else %}fa-regular fa-star{% endif %}"></i>
+            <span class="star-label">{% if project_fields.is_starred %}Starred{% else %}Star{% endif %}</span>
+            <span class="star-count bg-neutral-800/10 px-2 py-0.5 rounded-full text-xs">{{ project_fields.star_count }}</span>
+          </button>
+        </form>
+      </div>
+      <div class="flex gap-2 items-center">
+        {% if project_fields.slug %}
+          <a href="{% url 'home:project_detail' project_fields.slug %}"
+             class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit text-neutral-200"><i class="hidden md:inline fa-solid fa-newspaper"></i><span class="text-neutral-200 text-lg font-bold font-inter">View Project</span></a>
+        {% elif project_fields.project_url %}
+          <a href="{{ project_fields.project_url }}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit text-neutral-200"><i class="hidden md:inline fa-solid fa-arrow-up-right-from-square"></i><span class="text-neutral-200 text-lg font-bold font-inter">View Project</span></a>
+        {% endif %}
+        {% if user.is_superuser %}
+          <button type="button"
+                  hx-delete="{% url 'home:delete_project_ajax' project.pk %}"
+                  hx-target="closest article"
+                  hx-swap="outerHTML"
+                  hx-include="#search-bar"
+                  hx-confirm="Yakin hapus {{ project_fields.title }}?"
+                  class="bg-red-600 text-white py-2 px-3 rounded-lg shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out cursor-pointer font-bold flex items-center gap-2"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
+        {% endif %}
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 right-0 h-3 bg-secondary-300 rounded-b-lg z-10"></div>
+  </article>
+{% endwith %}

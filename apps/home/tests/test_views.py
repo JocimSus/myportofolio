@@ -410,6 +410,170 @@ class StarTest(TestCase):
         self.assertEqual(self.project.starred_by.count(), 2)
 
 
+class HtmxProjectViewTest(TestCase):
+    def setUp(self):
+        self.superuser = User.objects.create_superuser(
+            username="owner", email="owner@example.com", password="password123"
+        )
+        self.project = Project.objects.create(
+            title="Portfolio Project",
+            slug="portfolio-project",
+            description="Project rendered by HTMX.",
+            category="website",
+            technologies=["Django"],
+            thumbnail="https://example.com/project.png",
+            project_url="https://example.com/project",
+        )
+        self.headers = {"HTTP_HX_REQUEST": "true"}
+
+    def test_search_returns_project_cards_fragment(self):
+        response = self.client.get(
+            reverse("home:projects"), {"title": "Portfolio"}, **self.headers
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.project.title)
+        self.assertNotContains(response, "<html", html=False)
+
+    def test_create_project_returns_cards_for_htmx_and_json_for_regular_ajax(self):
+        self.client.force_login(self.superuser)
+        form_data = {
+            "title": "HTMX Project",
+            "description": "Created without a full reload.",
+            "category": "website",
+            "technologies": "Django, HTMX",
+            "thumbnail": "https://example.com/htmx.png",
+            "project_url": "https://example.com/htmx",
+        }
+
+        response = self.client.post(
+            reverse("home:create_project_ajax"), form_data, **self.headers
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "HTMX Project")
+        self.assertEqual(Project.objects.filter(title="HTMX Project").count(), 1)
+
+        form_data["title"] = "JSON Project"
+        response = self.client.post(reverse("home:create_project_ajax"), form_data)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response["Content-Type"], "application/json")
+
+    def test_invalid_project_retargets_form_fields(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.post(
+            reverse("home:create_project_ajax"), {"title": ""}, **self.headers
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["HX-Retarget"], "#project-form-fields")
+
+    def test_delete_project_accepts_htmx_delete(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.delete(
+            reverse("home:delete_project_ajax", args=[self.project.id]),
+            data="title=Portfolio",
+            content_type="application/x-www-form-urlencoded",
+            **self.headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Project.objects.filter(pk=self.project.pk).exists())
+        self.assertContains(response, "No projects added yet or found.")
+
+
+class HtmxExperienceViewTest(TestCase):
+    def setUp(self):
+        editor_group = Group.objects.create(name="editor")
+        self.superuser = User.objects.create_superuser(
+            username="owner", email="owner@example.com", password="password123"
+        )
+        self.editor = User.objects.create_user(
+            username="editor", password="password123"
+        )
+        self.editor.groups.add(editor_group)
+        self.experience = Experience.objects.create(
+            title="Teaching Assistant",
+            description="Supporting students in class.",
+            category="part-time",
+            start_date="2026-01-01",
+            thumbnail="https://example.com/experience.png",
+        )
+        self.headers = {"HTTP_HX_REQUEST": "true"}
+
+    def test_experience_page_is_server_rendered(self):
+        response = self.client.get(reverse("home:experience"))
+
+        self.assertContains(response, self.experience.title)
+        self.assertContains(response, self.experience.description)
+
+    def test_form_fragments_follow_permissions(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(
+            reverse("home:experience_form_fragment"), **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "experience-form")
+
+        self.client.force_login(self.editor)
+        response = self.client.get(
+            reverse("home:experience_edit_fragment", args=[self.experience.id]),
+            **self.headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.experience.title)
+
+    def test_create_and_update_experience_with_htmx(self):
+        self.client.force_login(self.superuser)
+        create_data = {
+            "title": "HTMX Internship",
+            "description": "Created without a full reload.",
+            "category": "internship",
+            "thumbnail": "https://example.com/internship.png",
+            "start_date": "2026-06-01",
+            "end_date": "2026-09-01",
+        }
+        response = self.client.post(
+            reverse("home:create_experience_ajax"), create_data, **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "HTMX Internship")
+
+        self.client.force_login(self.editor)
+        response = self.client.put(
+            reverse("home:update_experience_ajax", args=[self.experience.id]),
+            data=(
+                "title=Updated+Assistant&description=Updated+using+HTMX."
+                "&category=part-time&thumbnail=https%3A%2F%2Fexample.com%2Fexperience.png"
+                "&start_date=2026-01-01&end_date="
+            ),
+            content_type="application/x-www-form-urlencoded",
+            **self.headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, "Updated Assistant")
+
+    def test_invalid_experience_retargets_form_and_delete_accepts_htmx(self):
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            reverse("home:create_experience_ajax"), {"title": ""}, **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["HX-Retarget"], "#experience-form-container")
+
+        response = self.client.delete(
+            reverse("home:delete_experience_ajax", args=[self.experience.id]),
+            **self.headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Experience.objects.filter(pk=self.experience.pk).exists())
+        self.assertContains(response, "No experiences added yet.")
+
+
 class ApiEndpointIntegrityTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(

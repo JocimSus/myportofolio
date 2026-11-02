@@ -4,13 +4,14 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 
 from .decorators import role_required, superuser_required
 from .forms import ExperienceForm, ProjectForm
 from .selectors import (
+    get_all_experiences_by_start_date,
     get_experience_by_id,
     get_experiences_dict,
     get_profile_data,
@@ -19,6 +20,10 @@ from .selectors import (
     get_project_by_slug_dict,
     get_projects_with_stars,
 )
+
+
+def _is_htmx(request: HttpRequest) -> bool:
+    return request.headers.get("HX-Request") == "true"
 
 
 def profile(req: HttpRequest) -> HttpResponse:
@@ -36,8 +41,34 @@ def profile(req: HttpRequest) -> HttpResponse:
 def experience(req: HttpRequest) -> HttpResponse:
     ctx = {
         "form": ExperienceForm(),
+        "experiences": get_all_experiences_by_start_date(),
     }
     return render(req, "home/experience.html", ctx)
+
+
+@login_required(login_url="/login/")
+@superuser_required
+def experience_form_fragment(req: HttpRequest) -> HttpResponse:
+    return render(
+        req,
+        "home/partials/experience_form.html",
+        {"form": ExperienceForm(), "mode": "create"},
+    )
+
+
+@login_required(login_url="/login/")
+@role_required(allowed_roles=["editor"])
+def experience_edit_fragment(req: HttpRequest, experience_id: str) -> HttpResponse:
+    experience = get_experience_by_id(experience_id)
+    return render(
+        req,
+        "home/partials/experience_form.html",
+        {
+            "form": ExperienceForm(instance=experience),
+            "experience": experience,
+            "mode": "update",
+        },
+    )
 
 
 @login_required(login_url="/login/")
@@ -69,10 +100,29 @@ def create_experience_ajax(request):
     form = ExperienceForm(request.POST)
     if form.is_valid():
         experience = form.save()
+        if _is_htmx(request):
+            return render(
+                request,
+                "home/partials/experience_response.html",
+                {
+                    "experiences": get_all_experiences_by_start_date(),
+                    "create_form": ExperienceForm(),
+                },
+            )
         return JsonResponse(
             {"message": "Pengalaman berhasil ditambahkan.", "pk": str(experience.id)},
             status=201,
         )
+
+    if _is_htmx(request):
+        response = render(
+            request,
+            "home/partials/experience_form.html",
+            {"form": form, "mode": "create"},
+        )
+        response["HX-Retarget"] = "#experience-form-container"
+        response["HX-Reswap"] = "innerHTML"
+        return response
 
     return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
@@ -96,9 +146,9 @@ def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
-@require_POST
+@require_http_methods(["POST", "PUT"])
 @role_required(allowed_roles=["editor"])
-def update_experience_ajax(req: HttpRequest, experience_id: str) -> JsonResponse:
+def update_experience_ajax(req: HttpRequest, experience_id: str) -> HttpResponse:
     if not req.user.groups.filter(name="editor").exists() and not req.user.is_superuser:
         return JsonResponse(
             {
@@ -108,11 +158,31 @@ def update_experience_ajax(req: HttpRequest, experience_id: str) -> JsonResponse
         )
 
     experience = get_experience_by_id(experience_id)
-    form = ExperienceForm(req.POST, instance=experience)
+    form_data = req.POST if req.method == "POST" else QueryDict(req.body)
+    form = ExperienceForm(form_data, instance=experience)
 
     if form.is_valid():
         form.save()
+        if _is_htmx(req):
+            return render(
+                req,
+                "home/partials/experience_response.html",
+                {
+                    "experiences": get_all_experiences_by_start_date(),
+                    "create_form": ExperienceForm(),
+                },
+            )
         return JsonResponse({"message": "Pengalaman berhasil diperbarui."}, status=200)
+
+    if _is_htmx(req):
+        response = render(
+            req,
+            "home/partials/experience_form.html",
+            {"form": form, "experience": experience, "mode": "update"},
+        )
+        response["HX-Retarget"] = "#experience-form-container"
+        response["HX-Reswap"] = "innerHTML"
+        return response
 
     return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
@@ -131,11 +201,15 @@ def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
-@require_POST
+@require_http_methods(["POST", "DELETE"])
 @superuser_required
-def delete_experience_ajax(_req: HttpRequest, experience_id: str) -> JsonResponse:
+def delete_experience_ajax(req: HttpRequest, experience_id: str) -> HttpResponse:
     experience = get_experience_by_id(experience_id)
     experience.delete()
+    if _is_htmx(req):
+        if get_all_experiences_by_start_date().exists():
+            return HttpResponse("")
+        return render(req, "home/partials/experience_list.html", {"experiences": []})
     return JsonResponse({"message": "Pengalaman berhasil dihapus."}, status=200)
 
 
@@ -146,7 +220,10 @@ def projects(req: HttpRequest) -> HttpResponse:
     ctx = {
         "title_query": title_query,
         "form": ProjectForm(),
+        "projects": get_projects_with_stars(title_query=title_query, user=req.user),
     }
+    if _is_htmx(req):
+        return render(req, "home/partials/project_cards.html", ctx)
     return render(req, "home/projects.html", ctx)
 
 
@@ -187,10 +264,26 @@ def create_project_ajax(request):
     form = ProjectForm(request.POST)
     if form.is_valid():
         project = form.save()
+        if _is_htmx(request):
+            return render(
+                request,
+                "home/partials/project_cards.html",
+                {"projects": get_projects_with_stars(user=request.user)},
+            )
         return JsonResponse(
             {"message": "Proyek berhasil ditambahkan.", "pk": str(project.id)},
             status=201,
         )
+
+    if _is_htmx(request):
+        response = render(
+            request,
+            "home/partials/project_form_fields.html",
+            {"form": form},
+        )
+        response["HX-Retarget"] = "#project-form-fields"
+        response["HX-Reswap"] = "innerHTML"
+        return response
 
     return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
@@ -249,11 +342,18 @@ def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
-@require_POST
+@require_http_methods(["POST", "DELETE"])
 @superuser_required
-def delete_project_ajax(_req: HttpRequest, project_id: int) -> JsonResponse:
+def delete_project_ajax(req: HttpRequest, project_id: int) -> HttpResponse:
     project = get_project_by_id(project_id)
     project.delete()
+    if _is_htmx(req):
+        form_data = req.POST if req.method == "POST" else QueryDict(req.body)
+        title_query = form_data.get("title", "").strip()
+        projects = get_projects_with_stars(title_query=title_query, user=req.user)
+        if projects:
+            return HttpResponse("")
+        return render(req, "home/partials/project_cards.html", {"projects": projects})
     return JsonResponse({"message": "Proyek berhasil dihapus."}, status=200)
 
 

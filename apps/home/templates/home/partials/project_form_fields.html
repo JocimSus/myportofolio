@@ -1,0 +1,15 @@
+{% for field in form %}
+  <div class="w-full flex flex-col gap-2 mb-5 text-left form-w-full">
+    <label for="{{ field.id_for_label }}"
+           class="text-sm font-medium text-primary-100">
+      {{ field.label }}
+    </label>
+    <div class="w-full rounded-lg text-primary-800 border border-primary-100 bg-neutral-200 text-sm transition focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-800">
+      {{ field }}
+    </div>
+    {% if field.help_text %}<p class="text-xs text-neutral-500 mt-0.5">{{ field.help_text }}</p>{% endif %}
+    {% for error in field.errors %}<p class="text-red-400 text-sm">{{ error }}</p>{% endfor %}
+    <p id="error-{{ field.name }}"
+       class="text-red-400 text-sm hidden field-error"></p>
+  </div>
+{% endfor %}

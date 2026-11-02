@@ -1,0 +1,9 @@
+{% load auth_helper %}
+
+{% for experience in experiences %}
+  {% include "home/partials/experience_item.html" %}
+{% empty %}
+  <div class="py-6 text-center text-primary-100">
+    <p class="text-lg">No experiences added yet.</p>
+  </div>
+{% endfor %}
