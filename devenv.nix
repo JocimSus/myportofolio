@@ -70,10 +70,16 @@
   git-hooks.hooks = {
     ruff.enable = true;
     ruff-format.enable = true;
-    djlint = {
+    djlint-format = {
       enable = true;
       name = "djlint format";
       entry = "uv run djlint --reformat";
+      types = [ "html" ];
+    };
+    djlint-lint = {
+      enable = true;
+      name = "djlint lint";
+      entry = "uv run djlint --lint";
       types = [ "html" ];
     };
   };
