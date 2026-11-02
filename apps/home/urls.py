@@ -80,11 +80,5 @@ urlpatterns = [
     path("login/", views.login_user, name="login"),
     path("logout/", views.logout_user, name="logout"),
     # API
-    path("api/projects/", views.get_projects_json, name="get_projects_json"),
-    path(
-        "api/projects/<slug:slug>/",
-        views.get_project_detail_json,
-        name="get_project_detail_json",
-    ),
     path("api/experiences/", views.get_experiences_json, name="get_experiences_json"),
 ]

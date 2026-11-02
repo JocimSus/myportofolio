@@ -43,13 +43,19 @@ class ProjectForm(ModelForm):
         return category
 
     def clean_thumbnail(self):
-        thumbnail = strip_tags(self.cleaned_data.get("thumbnail", "")).strip()
+        raw_thumbnail = self.cleaned_data.get("thumbnail", "")
+        if not raw_thumbnail:
+            return raw_thumbnail
+        thumbnail = strip_tags(raw_thumbnail).strip()
         if not thumbnail:
             raise ValidationError("Thumbnail proyek tidak boleh hanya berisi tag HTML.")
         return thumbnail
 
     def clean_project_url(self):
-        project_url = strip_tags(self.cleaned_data.get("project_url", "")).strip()
+        raw_project_url = self.cleaned_data.get("project_url", "")
+        if not raw_project_url:
+            return raw_project_url
+        project_url = strip_tags(raw_project_url).strip()
         if not project_url:
             raise ValidationError("URL proyek tidak boleh hanya berisi tag HTML.")
         return project_url
@@ -134,7 +140,10 @@ class ExperienceForm(ModelForm):
         return category
 
     def clean_thumbnail(self):
-        thumbnail = strip_tags(self.cleaned_data.get("thumbnail", "")).strip()
+        raw_thumbnail = self.cleaned_data.get("thumbnail", "")
+        if not raw_thumbnail:
+            return raw_thumbnail
+        thumbnail = strip_tags(raw_thumbnail).strip()
         if not thumbnail:
             raise ValidationError(
                 "Thumbnail pengalaman tidak boleh hanya berisi tag HTML."

@@ -4,7 +4,7 @@
       {% if mode == 'update' %}hx-put="{% url 'home:update_experience_ajax' experience.pk %}"{% else %}hx-post="{% url 'home:create_experience_ajax' %}"{% endif %}
       hx-target="#experience-container"
       hx-swap="innerHTML"
-      hx-on::after-request="if (event.detail.successful) document.getElementById('add-experience-modal').hidePopover()"
+      hx-on::after-request="if (event.detail.successful && !event.detail.xhr.getResponseHeader('HX-Retarget')) document.getElementById('add-experience-modal').hidePopover()"
       class="flex flex-col">
   {% csrf_token %}
   {% for field in form %}

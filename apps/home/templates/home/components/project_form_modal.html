@@ -17,11 +17,7 @@
         {% if slug %}Update Project{% else %}Add New Project{% endif %}
       </h2>
     </div>
-    <form id="project-form"
-          method="post"
-          action="{% if slug %}{% url 'home:update_project_ajax' slug %}{% else %}{% url 'home:create_project_ajax' %}{% endif %}"
-          {% if htmx_enabled %}hx-post="{% url 'home:create_project_ajax' %}" hx-target="#grid" hx-swap="innerHTML" hx-on::after-request="if (event.detail.successful) { this.reset(); document.getElementById('add-project-modal').hidePopover(); }"{% endif %}
-          class="flex flex-col">
+    <form id="project-form" method="post" action="{% if project_id %}{% url 'api:project-detail' project_id %}{% else %}{% url 'api:project-list' %}{% endif %}" {% if htmx_enabled %}{% if project_id %}hx-put="{% url 'api:project-detail' project_id %}"{% else %}hx-post="{% url 'api:project-list' %}"{% endif %} hx-swap="none" hx-headers='{"X-CSRFToken": "{{ csrf_token }}", "Accept": "application/json"}'{% endif %} class="flex flex-col">
       {% csrf_token %}
       <div id="project-form-fields">{% include "home/partials/project_form_fields.html" %}</div>
       <div class="flex items-center justify-end gap-3 pt-4 mt-2 border-t border-neutral-300">

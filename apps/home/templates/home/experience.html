@@ -1,7 +1,5 @@
 {% extends 'home/base.html' %}
 
-{% load auth_helper %}
-
 {% block meta %}
   <title>{{ nick }} - Experience</title>
 {% endblock %}
@@ -16,7 +14,7 @@
         {% include "home/partials/experience_list.html" %}
       </div>
     </section>
-    {% if user.is_superuser %}
+    {% if perms.home.add_experience %}
       <div class="bottom-0 flex justify-end">
         <button type="button"
                 popovertarget="add-experience-modal"
@@ -30,8 +28,61 @@
       </div>
     {% endif %}
   </main>
-  {% if user.is_superuser or user|has_group:"editor" %}
+  {% if perms.home.change_experience or perms.home.add_experience %}
     {% include "home/components/experience_form_modal.html" %}
   {% endif %}
+  {% if perms.home.delete_experience %}
+    {% include "home/components/experience_delete_modal.html" %}
+  {% endif %}
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+  {% if perms.home.delete_experience %}
+    <script>
+      const experienceContainer = document.getElementById("experience-container");
+      const deleteExperienceModal = document.getElementById("delete-experience-modal");
+      const deleteExperienceForm = document.getElementById("delete-experience-form");
+      const deleteExperienceName = document.getElementById("delete-experience-name");
+
+      experienceContainer.addEventListener("click", (event) => {
+        const trigger = event.target.closest(".delete-experience-trigger");
+        if (!trigger) return;
+
+        deleteExperienceForm.action = trigger.dataset.deleteUrl;
+        deleteExperienceForm.dataset.targetId = `experience-${trigger.dataset.experienceId}`;
+        deleteExperienceName.textContent = trigger.dataset.experienceTitle;
+        deleteExperienceModal.showPopover();
+      });
+
+      deleteExperienceForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const csrfToken = deleteExperienceForm.querySelector("[name=csrfmiddlewaretoken]").value;
+
+        htmx.ajax("DELETE", deleteExperienceForm.action, {
+          target: deleteExperienceForm,
+          swap: "none",
+          source: deleteExperienceForm,
+          headers: {
+            "Accept": "text/html",
+            "X-CSRFToken": csrfToken,
+          },
+        });
+      });
+
+      document.body.addEventListener("htmx:afterRequest", (event) => {
+        if (event.detail.elt !== deleteExperienceForm) return;
+        if (!event.detail.successful) return;
+
+        const responseHtml = event.detail.xhr.responseText.trim();
+        if (responseHtml) {
+          experienceContainer.innerHTML = responseHtml;
+          htmx.process(experienceContainer);
+        } else {
+          document.getElementById(deleteExperienceForm.dataset.targetId)?.remove();
+          if (!experienceContainer.querySelector("article[id^='experience-']")) {
+            experienceContainer.innerHTML = '<div class="py-6 text-center text-primary-100"><p class="text-lg">No experiences added yet.</p></div>';
+          }
+        }
+        deleteExperienceModal.hidePopover();
+      });
+    </script>
+  {% endif %}
 {% endblock %}
