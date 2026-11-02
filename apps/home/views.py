@@ -2,13 +2,12 @@ import datetime
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
-from .decorators import role_required, superuser_required
 from .forms import ExperienceForm, ProjectForm
 from .selectors import (
     get_all_experiences_by_start_date,
@@ -47,7 +46,7 @@ def experience(req: HttpRequest) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
-@superuser_required
+@permission_required("home.add_experience", raise_exception=True)
 def experience_form_fragment(req: HttpRequest) -> HttpResponse:
     return render(
         req,
@@ -57,7 +56,7 @@ def experience_form_fragment(req: HttpRequest) -> HttpResponse:
 
 
 @login_required(login_url="/login/")
-@role_required(allowed_roles=["editor"])
+@permission_required("home.change_experience", raise_exception=True)
 def experience_edit_fragment(req: HttpRequest, experience_id: str) -> HttpResponse:
     experience = get_experience_by_id(experience_id)
     return render(
@@ -72,7 +71,7 @@ def experience_edit_fragment(req: HttpRequest, experience_id: str) -> HttpRespon
 
 
 @login_required(login_url="/login/")
-@superuser_required
+@permission_required("home.add_experience", raise_exception=True)
 def create_experience(req: HttpRequest) -> HttpResponse:
     form = ExperienceForm(req.POST or None)
 
@@ -89,14 +88,8 @@ def create_experience(req: HttpRequest) -> HttpResponse:
 
 @login_required(login_url="/login/")
 @require_POST
-@superuser_required
+@permission_required("home.add_experience", raise_exception=True)
 def create_experience_ajax(request):
-    if not request.user.is_superuser:
-        return JsonResponse(
-            {"message": "Hanya pemilik portofolio yang dapat menambahkan pengalaman."},
-            status=403,
-        )
-
     form = ExperienceForm(request.POST)
     if form.is_valid():
         experience = form.save()
@@ -104,10 +97,7 @@ def create_experience_ajax(request):
             return render(
                 request,
                 "home/partials/experience_response.html",
-                {
-                    "experiences": get_all_experiences_by_start_date(),
-                    "create_form": ExperienceForm(),
-                },
+                {"experiences": get_all_experiences_by_start_date()},
             )
         return JsonResponse(
             {"message": "Pengalaman berhasil ditambahkan.", "pk": str(experience.id)},
@@ -128,7 +118,7 @@ def create_experience_ajax(request):
 
 
 @login_required(login_url="/login/")
-@role_required(allowed_roles=["editor"])
+@permission_required("home.change_experience", raise_exception=True)
 def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
     experience = get_experience_by_id(experience_id)
     form = ExperienceForm(req.POST or None, instance=experience)
@@ -147,16 +137,8 @@ def update_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
 
 @login_required(login_url="/login/")
 @require_http_methods(["POST", "PUT"])
-@role_required(allowed_roles=["editor"])
+@permission_required("home.change_experience", raise_exception=True)
 def update_experience_ajax(req: HttpRequest, experience_id: str) -> HttpResponse:
-    if not req.user.groups.filter(name="editor").exists() and not req.user.is_superuser:
-        return JsonResponse(
-            {
-                "message": "Hanya editor dan pemilik portofolio yang dapat memperbarui pengalaman."
-            },
-            status=403,
-        )
-
     experience = get_experience_by_id(experience_id)
     form_data = req.POST if req.method == "POST" else QueryDict(req.body)
     form = ExperienceForm(form_data, instance=experience)
@@ -167,10 +149,7 @@ def update_experience_ajax(req: HttpRequest, experience_id: str) -> HttpResponse
             return render(
                 req,
                 "home/partials/experience_response.html",
-                {
-                    "experiences": get_all_experiences_by_start_date(),
-                    "create_form": ExperienceForm(),
-                },
+                {"experiences": get_all_experiences_by_start_date()},
             )
         return JsonResponse({"message": "Pengalaman berhasil diperbarui."}, status=200)
 
@@ -188,7 +167,7 @@ def update_experience_ajax(req: HttpRequest, experience_id: str) -> HttpResponse
 
 
 @login_required(login_url="/login/")
-@superuser_required
+@permission_required("home.delete_experience", raise_exception=True)
 def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
     experience = get_experience_by_id(experience_id)
 
@@ -202,7 +181,7 @@ def delete_experience(req: HttpRequest, experience_id: str) -> HttpResponse:
 
 @login_required(login_url="/login/")
 @require_http_methods(["POST", "DELETE"])
-@superuser_required
+@permission_required("home.delete_experience", raise_exception=True)
 def delete_experience_ajax(req: HttpRequest, experience_id: str) -> HttpResponse:
     experience = get_experience_by_id(experience_id)
     experience.delete()
@@ -228,15 +207,17 @@ def projects(req: HttpRequest) -> HttpResponse:
 
 
 def project_detail(req: HttpRequest, slug: str) -> HttpResponse:
+    project = get_project_by_slug(slug)
     ctx = {
         "slug": slug,
+        "project": project,
         "form": ProjectForm(),
     }
     return render(req, "home/project_detail.html", ctx)
 
 
 @login_required(login_url="/login/")
-@superuser_required
+@permission_required("home.add_project", raise_exception=True)
 def create_project(req: HttpRequest) -> HttpResponse:
     form = ProjectForm(req.POST or None)
 
@@ -253,14 +234,8 @@ def create_project(req: HttpRequest) -> HttpResponse:
 
 @login_required(login_url="/login/")
 @require_POST
-@superuser_required
+@permission_required("home.add_project", raise_exception=True)
 def create_project_ajax(request):
-    if not request.user.is_superuser:
-        return JsonResponse(
-            {"message": "Hanya pemilik portofolio yang dapat menambahkan proyek."},
-            status=403,
-        )
-
     form = ProjectForm(request.POST)
     if form.is_valid():
         project = form.save()
@@ -289,7 +264,7 @@ def create_project_ajax(request):
 
 
 @login_required(login_url="/login/")
-@role_required(allowed_roles=["editor"])
+@permission_required("home.change_project", raise_exception=True)
 def update_project(req: HttpRequest, slug: str) -> HttpResponse:
     project = get_project_by_slug(slug)
     form = ProjectForm(req.POST or None, instance=project)
@@ -308,16 +283,8 @@ def update_project(req: HttpRequest, slug: str) -> HttpResponse:
 
 @login_required(login_url="/login/")
 @require_POST
-@role_required(allowed_roles=["editor"])
+@permission_required("home.change_project", raise_exception=True)
 def update_project_ajax(req: HttpRequest, slug: str) -> JsonResponse:
-    if not req.user.groups.filter(name="editor").exists() and not req.user.is_superuser:
-        return JsonResponse(
-            {
-                "message": "Hanya editor dan pemilik portofolio yang dapat memperbarui proyek."
-            },
-            status=403,
-        )
-
     project = get_project_by_slug(slug)
     form = ProjectForm(req.POST, instance=project)
 
@@ -329,7 +296,7 @@ def update_project_ajax(req: HttpRequest, slug: str) -> JsonResponse:
 
 
 @login_required(login_url="/login/")
-@superuser_required
+@permission_required("home.delete_project", raise_exception=True)
 def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
     project = get_project_by_id(project_id)
 
@@ -343,7 +310,7 @@ def delete_project(req: HttpRequest, project_id: int) -> HttpResponse:
 
 @login_required(login_url="/login/")
 @require_http_methods(["POST", "DELETE"])
-@superuser_required
+@permission_required("home.delete_project", raise_exception=True)
 def delete_project_ajax(req: HttpRequest, project_id: int) -> HttpResponse:
     project = get_project_by_id(project_id)
     project.delete()

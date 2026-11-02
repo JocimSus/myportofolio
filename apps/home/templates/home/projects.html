@@ -4,8 +4,10 @@
   <title>{{ nick }} - Projects</title>
 {% endblock %}
 {% block content %}
-  <main class="w-full mb-20 min-h-screen max-w-6xl mx-auto"
-        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <main id="projects-page"
+        data-can-delete="{{ perms.home.delete_project|yesno:'true,false' }}"
+        class="w-full mb-20 min-h-screen max-w-6xl mx-auto"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}", "Accept": "application/json"}'>
     <section class="flex flex-col justify-center items-center py-20">
       <h1 class="text-4xl font-bold">what I've done.</h1>
       <div class="bg-tertiary-600 w-3/4 h-0.5 rounded-full my-10"></div>
@@ -20,17 +22,17 @@
                  value="{{ title_query }}"
                  placeholder="Find projects based on name"
                  aria-label="Find projects based on name"
-                 hx-get="{% url 'home:projects' %}"
+                 hx-get="{% url 'api:project-list' %}"
                  hx-trigger="keyup changed delay:300ms, search"
                  hx-target="#grid"
-                 hx-swap="innerHTML"
+                 hx-swap="none"
                  class="border border-primary-100 px-4 py-2 rounded-lg w-full">
           <button type="submit"
                   class="bg-secondary-300 text-neutral-200 py-2 px-3 rounded-lg shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out cursor-pointer">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
         </form>
-        {% if user.is_superuser %}
+        {% if perms.home.add_project %}
           <button type="button"
                   class="ml-auto bg-secondary-300 text-neutral-200 py-2 px-3 rounded-lg shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-2"
                   popovertarget="add-project-modal">
@@ -42,53 +44,146 @@
       <div id="grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4">{% include "home/partials/project_cards.html" %}</div>
     </section>
   </main>
-  {% if user.is_superuser %}
+  {% if perms.home.add_project %}
     {% include "home/components/project_form_modal.html" with htmx_enabled=True %}
+  {% endif %}
+  {% if perms.home.delete_project %}
+    {% include "home/components/project_delete_modal.html" %}
   {% endif %}
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
   <script>
+    const projectsPage = document.getElementById('projects-page');
     const gridContainer = document.getElementById('grid');
-    const { getCookie } = window.PortfolioUtils;
+    const searchBar = document.getElementById('search-bar');
 
-    async function handleToggleStar(formElement) {
-      const submitBtn = formElement.querySelector('.star-btn');
-      const starIcon = formElement.querySelector('.star-icon');
-      const starLabel = formElement.querySelector('.star-label');
-      const starCount = formElement.querySelector('.star-count');
-
-      if (!submitBtn) return;
-      submitBtn.disabled = true;
-
-      try {
-        const response = await fetch(formElement.action, {
-          method: 'POST',
-          headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
-        });
-
-        if (response.status === 401 || response.redirected) {
-          window.location.href = '/login/';
-          return;
-        }
-        if (!response.ok) throw new Error('Unable to update star');
-
-        const data = await response.json();
-        submitBtn.className = data.is_starred
-          ? 'star-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 bg-amber-500 text-white'
-          : 'star-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 bg-neutral-300 text-neutral-800 hover:bg-neutral-400';
-        starIcon.className = data.is_starred ? 'star-icon fa-solid fa-star text-yellow-300' : 'star-icon fa-regular fa-star';
-        starLabel.textContent = data.is_starred ? 'Starred' : 'Star';
-        starCount.textContent = data.star_count;
-      } catch (error) {
-        if (typeof showToast === 'function') showToast('Gagal', 'Terjadi kesalahan saat memperbarui star.', 'error');
-      } finally {
-        submitBtn.disabled = false;
-      }
+    function escapeHtml(value) {
+      const element = document.createElement('span');
+      element.textContent = value ?? '';
+      return element.innerHTML;
     }
 
-    gridContainer.addEventListener('submit', (event) => {
-      if (event.target.classList.contains('star-form')) {
-        event.preventDefault();
-        handleToggleStar(event.target);
+    function renderProject(project) {
+      const technologies = (project.technologies || [])
+        .map((technology) => `<span class="text-xs font-semibold px-3 py-1 bg-tertiary-100 text-neutral-100 rounded-full shadow-sm">${escapeHtml(technology)}</span>`)
+        .join('');
+      const thumbnail = project.thumbnail
+        ? `<div class="relative my-4 rounded-lg p-1"><img src="${escapeHtml(project.thumbnail)}" alt="${escapeHtml(project.title)}" class="w-full h-48 object-cover rounded-md select-none pointer-events-none"><div class="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none rounded-md"></div></div>`
+        : '';
+      const projectLink = project.slug
+        ? `<a href="/projects/${escapeHtml(project.slug)}/" class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit text-neutral-200"><i class="hidden md:inline fa-solid fa-newspaper"></i><span class="text-neutral-200 text-lg font-bold font-inter">View Project</span></a>`
+        : project.project_url
+          ? `<a href="${escapeHtml(project.project_url)}" target="_blank" rel="noopener noreferrer" class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit text-neutral-200"><i class="hidden md:inline fa-solid fa-arrow-up-right-from-square"></i><span class="text-neutral-200 text-lg font-bold font-inter">View Project</span></a>`
+          : '';
+      const deleteButton = projectsPage.dataset.canDelete === 'true'
+        ? `<button type="button" data-delete-url="/api/v1/projects/${project.id}/" data-project-id="${project.id}" data-project-title="${escapeHtml(project.title)}" class="delete-project-trigger bg-red-600 text-white py-2 px-3 rounded-lg shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out cursor-pointer font-bold flex items-center gap-2"><i class="fa-solid fa-trash"></i><span>Delete</span></button>`
+        : '';
+
+      return `<article id="project-${project.id}" class="relative bg-neutral-200 shadow-xl rounded-lg p-6 mb-4 min-w-75 flex flex-col justify-between"><div><span class="flex justify-between items-center mb-2"><h3 class="text-xl font-bold text-gray-800">${escapeHtml(project.title)}</h3>${project.category ? `<p class="text-xs font-bold text-secondary-100 border-2 border-secondary-100 p-2 rounded-full capitalize">${escapeHtml(project.category)}</p>` : ''}</span>${thumbnail}<p class="mb-4 text-neutral-700">${escapeHtml(project.description)}</p>${technologies ? `<div class="flex flex-wrap gap-2 my-4">${technologies}</div>` : ''}</div><div><div class="mb-4"><form hx-post="/api/v1/projects/${project.id}/star/" hx-swap="none" class="star-form inline-block"><button type="submit" class="star-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-300 text-sm font-semibold transition-colors duration-200 ${project.is_starred ? 'bg-amber-500 text-white' : 'bg-neutral-300 text-neutral-800 hover:bg-neutral-400'}"><i class="star-icon ${project.is_starred ? 'fa-solid fa-star text-yellow-300' : 'fa-regular fa-star'}"></i><span class="star-label">${project.is_starred ? 'Starred' : 'Star'}</span><span class="star-count bg-neutral-800/10 px-2 py-0.5 rounded-full text-xs">${project.star_count}</span></button></form></div><div class="flex gap-2 items-center">${projectLink}${deleteButton}</div></div><div class="absolute bottom-0 left-0 right-0 h-3 bg-secondary-300 rounded-b-lg z-10"></div></article>`;
+    }
+
+    function renderProjects(projects) {
+      gridContainer.innerHTML = projects.length
+        ? projects.map(renderProject).join('')
+        : '<div class="col-span-full text-center text-primary-100 mt-2"><p class="text-lg">No projects added yet or found.</p></div>';
+      htmx.process(gridContainer);
+    }
+
+    function refreshProjects() {
+      htmx.ajax('GET', `{% url 'api:project-list' %}?title=${encodeURIComponent(searchBar.value)}`, {
+        swap: 'none',
+        target: '#grid',
+        source: projectsPage,
+        headers: { 'Accept': 'application/json' },
+      });
+    }
+
+    function clearFormErrors() {
+      document.querySelectorAll('#project-form .field-error').forEach((error) => {
+        error.textContent = '';
+        error.classList.add('hidden');
+      });
+    }
+
+    function showFormErrors(errors) {
+      clearFormErrors();
+      Object.entries(errors || {}).forEach(([fieldName, messages]) => {
+        const error = document.getElementById(`error-${fieldName}`);
+        if (!error) return;
+        error.textContent = messages.map((message) => message.message || message).join(' ');
+        error.classList.remove('hidden');
+      });
+    }
+
+    function openDeleteModal(trigger) {
+      const modal = document.getElementById('delete-project-modal');
+      const form = document.getElementById('delete-project-form');
+      const name = document.getElementById('delete-project-name');
+      if (!modal || !form || !name) return;
+
+      form.action = trigger.dataset.deleteUrl;
+      form.dataset.targetId = `project-${trigger.dataset.projectId}`;
+      name.textContent = trigger.dataset.projectTitle;
+      modal.showPopover();
+    }
+
+    document.addEventListener('click', (event) => {
+      const trigger = event.target.closest('.delete-project-trigger');
+      if (trigger) openDeleteModal(trigger);
+    });
+
+    document.getElementById('delete-project-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const csrfToken = form.querySelector('[name="csrfmiddlewaretoken"]')?.value;
+      htmx.ajax('DELETE', form.action, {
+        swap: 'none',
+        target: form,
+        source: form,
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+      });
+    });
+
+    document.body.addEventListener('htmx:afterRequest', (event) => {
+      const { xhr, elt, successful } = event.detail;
+      const isProjectPageRequest = elt?.closest('#projects-page') || elt?.id === 'project-form' || elt?.id === 'delete-project-form';
+      if (!isProjectPageRequest || !xhr) return;
+      let data = null;
+      try {
+        data = xhr.responseText ? JSON.parse(xhr.responseText) : null;
+      } catch (error) {
+        if (typeof showToast === 'function') showToast('Gagal', 'Response API tidak valid.', 'error');
+        return;
+      }
+      if (xhr.status === 401 || xhr.status === 403) {
+        if (typeof showToast === 'function') showToast('Gagal', 'Kamu tidak memiliki izin untuk melakukan aksi ini.', 'error');
+        return;
+      }
+      if (!successful) {
+        if (elt.id === 'project-form') showFormErrors(data);
+        return;
+      }
+      if (xhr.status === 204) {
+        const targetId = elt.dataset.targetId;
+        document.getElementById(targetId)?.remove();
+        document.getElementById('delete-project-modal')?.hidePopover();
+        return;
+      }
+      if (Array.isArray(data)) {
+        renderProjects(data);
+      } else if (elt.id === 'project-form') {
+        clearFormErrors();
+        document.getElementById('add-project-modal')?.hidePopover();
+        elt.reset();
+        refreshProjects();
+      } else if (data?.id) {
+        const card = document.getElementById(`project-${data.id}`);
+        if (card) {
+          card.outerHTML = renderProject(data);
+          htmx.process(document.getElementById(`project-${data.id}`));
+        }
       }
     });
   </script>

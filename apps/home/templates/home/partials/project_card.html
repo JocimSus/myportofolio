@@ -4,7 +4,7 @@
     <div>
       <span class="flex justify-between items-center mb-2">
         <h3 class="text-xl font-bold text-gray-800">{{ project_fields.title }}</h3>
-        {% if project_fields.category %}<p class="text-xs font-bold text-secondary-100 border-2 border-secondary-100 p-2 rounded-full capitalize">{{ project_fields.category }}</p>{% endif %}
+        {% if project_fields.category %}<p class="text-xs font-bold text-secondary-100 border-2 border-secondary-100 p-2 rounded-full capitalize">{{ project_fields.category|title }}</p>{% endif %}
       </span>
       {% if project_fields.thumbnail %}
         <div class="relative my-4 rounded-lg p-1">
@@ -24,7 +24,8 @@
     <div>
       <div class="mb-4">
         <form method="post"
-              action="{% url 'home:toggle_star_ajax' project.pk %}"
+              hx-post="{% url 'api:project-star' project_fields.pk|default:project.pk %}"
+              hx-swap="none"
               class="star-form inline-block">
           {% csrf_token %}
           <button type="submit"
@@ -46,14 +47,12 @@
              rel="noopener noreferrer"
              class="flex bg-secondary-300 py-2 px-3 rounded-lg items-center text-center gap-2 shadow-xl hover:bg-secondary-400 transition-colors duration-300 ease-in-out w-fit text-neutral-200"><i class="hidden md:inline fa-solid fa-arrow-up-right-from-square"></i><span class="text-neutral-200 text-lg font-bold font-inter">View Project</span></a>
         {% endif %}
-        {% if user.is_superuser %}
+        {% if perms.home.delete_project %}
           <button type="button"
-                  hx-delete="{% url 'home:delete_project_ajax' project.pk %}"
-                  hx-target="closest article"
-                  hx-swap="outerHTML"
-                  hx-include="#search-bar"
-                  hx-confirm="Yakin hapus {{ project_fields.title }}?"
-                  class="bg-red-600 text-white py-2 px-3 rounded-lg shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out cursor-pointer font-bold flex items-center gap-2"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
+                  data-delete-url="{% url 'api:project-detail' project_fields.pk|default:project.pk %}"
+                  data-project-id="{{ project_fields.pk|default:project.pk }}"
+                  data-project-title="{{ project_fields.title }}"
+                  class="delete-project-trigger bg-red-600 text-white py-2 px-3 rounded-lg shadow-xl hover:bg-red-700 transition-colors duration-300 ease-in-out cursor-pointer font-bold flex items-center gap-2"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
         {% endif %}
       </div>
     </div>

@@ -1,9 +1,16 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, Permission, User
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from ..models import Experience, Project
+
+
+def grant_editor_permissions(group):
+    group.permissions.add(
+        Permission.objects.get(codename="change_project"),
+        Permission.objects.get(codename="change_experience"),
+    )
 
 
 class HomeViewTest(TestCase):
@@ -99,6 +106,28 @@ class ProjectViewTest(TestCase):
             f'href="{reverse("home:project_detail", args=[self.project.slug])}"',
         )
 
+    def test_project_create_modal_uses_htmx_json_api(self):
+        user = User.objects.create_user(username="project-owner", password="secret")
+        user.user_permissions.add(Permission.objects.get(codename="add_project"))
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("home:projects"))
+
+        self.assertContains(response, 'hx-post="/api/v1/projects/"')
+        self.assertContains(response, '"Accept": "application/json"')
+
+    def test_project_delete_uses_confirmation_modal(self):
+        user = User.objects.create_user(username="project-editor", password="secret")
+        user.user_permissions.add(Permission.objects.get(codename="delete_project"))
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("home:projects"))
+
+        self.assertContains(response, 'id="delete-project-modal"')
+        self.assertContains(response, 'class="delete-project-trigger')
+        self.assertContains(response, f'data-project-id="{self.project.id}"')
+        self.assertNotContains(response, "hx-confirm=")
+
     def test_empty_project_page(self):
         Project.objects.all().delete()
 
@@ -133,6 +162,7 @@ class ProjectViewTest(TestCase):
 class ProjectFormViewTest(TestCase):
     def setUp(self):
         self.editor_group = Group.objects.create(name="editor")
+        grant_editor_permissions(self.editor_group)
 
         self.superuser = User.objects.create_superuser(
             username="superuser", email="superuser@mail.com", password="password123"
@@ -216,6 +246,7 @@ class ProjectFormViewTest(TestCase):
 class ExperienceFormViewTest(TestCase):
     def setUp(self):
         self.editor_group = Group.objects.create(name="editor")
+        grant_editor_permissions(self.editor_group)
 
         self.superuser = User.objects.create_superuser(
             username="superuser", email="superuser@mail.com", password="password123"
@@ -294,6 +325,7 @@ class ExperienceFormViewTest(TestCase):
 class RoleAuthorizationTest(TestCase):
     def setUp(self):
         self.editor_group = Group.objects.create(name="editor")
+        grant_editor_permissions(self.editor_group)
 
         self.regular_user = User.objects.create_user(
             username="regular_user", password="password123"
@@ -488,6 +520,7 @@ class HtmxProjectViewTest(TestCase):
 class HtmxExperienceViewTest(TestCase):
     def setUp(self):
         editor_group = Group.objects.create(name="editor")
+        grant_editor_permissions(editor_group)
         self.superuser = User.objects.create_superuser(
             username="owner", email="owner@example.com", password="password123"
         )
@@ -509,6 +542,39 @@ class HtmxExperienceViewTest(TestCase):
 
         self.assertContains(response, self.experience.title)
         self.assertContains(response, self.experience.description)
+
+    def test_experience_page_uses_delete_modal_and_preserves_invalid_form_modal(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("home:experience"))
+
+        self.assertContains(response, 'id="delete-experience-modal"')
+        self.assertContains(response, 'class="delete-experience-trigger')
+        self.assertContains(response, f'data-experience-id="{self.experience.id}"')
+        self.assertNotContains(response, "hx-confirm=")
+        self.assertContains(
+            response,
+            'elt?.id !== "experience-form"',
+        )
+        self.assertNotContains(response, "hx-on::after-request")
+
+    def test_experience_forms_use_post_and_explicit_csrf_headers(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("home:experience"))
+
+        self.assertContains(response, 'hx-post="/experience/add-ajax/"')
+        self.assertContains(response, 'hx-headers=\'{"X-CSRFToken": "')
+        self.assertNotContains(response, "hx-put=")
+
+        response = self.client.get(
+            reverse("home:experience_edit_fragment", args=[self.experience.id]),
+            **self.headers,
+        )
+
+        self.assertContains(
+            response,
+            f'hx-post="/experience/{self.experience.id}/edit/ajax/"',
+        )
+        self.assertContains(response, self.experience.title)
 
     def test_form_fragments_follow_permissions(self):
         self.client.force_login(self.superuser)
@@ -541,16 +607,19 @@ class HtmxExperienceViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "HTMX Internship")
+        self.assertNotContains(response, "hx-swap-oob")
 
         self.client.force_login(self.editor)
-        response = self.client.put(
+        response = self.client.post(
             reverse("home:update_experience_ajax", args=[self.experience.id]),
-            data=(
-                "title=Updated+Assistant&description=Updated+using+HTMX."
-                "&category=part-time&thumbnail=https%3A%2F%2Fexample.com%2Fexperience.png"
-                "&start_date=2026-01-01&end_date="
-            ),
-            content_type="application/x-www-form-urlencoded",
+            data={
+                "title": "Updated Assistant",
+                "description": "Updated using HTMX.",
+                "category": "part-time",
+                "thumbnail": "https://example.com/experience.png",
+                "start_date": "2026-01-01",
+                "end_date": "",
+            },
             **self.headers,
         )
         self.assertEqual(response.status_code, 200)
