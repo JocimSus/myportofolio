@@ -553,8 +553,28 @@ class HtmxExperienceViewTest(TestCase):
         self.assertNotContains(response, "hx-confirm=")
         self.assertContains(
             response,
-            "event.detail.xhr.getResponseHeader('HX-Retarget')",
+            'elt?.id !== "experience-form"',
         )
+        self.assertNotContains(response, "hx-on::after-request")
+
+    def test_experience_forms_use_post_and_explicit_csrf_headers(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("home:experience"))
+
+        self.assertContains(response, 'hx-post="/experience/add-ajax/"')
+        self.assertContains(response, 'hx-headers=\'{"X-CSRFToken": "')
+        self.assertNotContains(response, "hx-put=")
+
+        response = self.client.get(
+            reverse("home:experience_edit_fragment", args=[self.experience.id]),
+            **self.headers,
+        )
+
+        self.assertContains(
+            response,
+            f'hx-post="/experience/{self.experience.id}/edit/ajax/"',
+        )
+        self.assertContains(response, self.experience.title)
 
     def test_form_fragments_follow_permissions(self):
         self.client.force_login(self.superuser)
@@ -587,16 +607,19 @@ class HtmxExperienceViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "HTMX Internship")
+        self.assertNotContains(response, "hx-swap-oob")
 
         self.client.force_login(self.editor)
-        response = self.client.put(
+        response = self.client.post(
             reverse("home:update_experience_ajax", args=[self.experience.id]),
-            data=(
-                "title=Updated+Assistant&description=Updated+using+HTMX."
-                "&category=part-time&thumbnail=https%3A%2F%2Fexample.com%2Fexperience.png"
-                "&start_date=2026-01-01&end_date="
-            ),
-            content_type="application/x-www-form-urlencoded",
+            data={
+                "title": "Updated Assistant",
+                "description": "Updated using HTMX.",
+                "category": "part-time",
+                "thumbnail": "https://example.com/experience.png",
+                "start_date": "2026-01-01",
+                "end_date": "",
+            },
             **self.headers,
         )
         self.assertEqual(response.status_code, 200)

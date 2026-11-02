@@ -97,10 +97,7 @@ def create_experience_ajax(request):
             return render(
                 request,
                 "home/partials/experience_response.html",
-                {
-                    "experiences": get_all_experiences_by_start_date(),
-                    "create_form": ExperienceForm(),
-                },
+                {"experiences": get_all_experiences_by_start_date()},
             )
         return JsonResponse(
             {"message": "Pengalaman berhasil ditambahkan.", "pk": str(experience.id)},
@@ -152,10 +149,7 @@ def update_experience_ajax(req: HttpRequest, experience_id: str) -> HttpResponse
             return render(
                 req,
                 "home/partials/experience_response.html",
-                {
-                    "experiences": get_all_experiences_by_start_date(),
-                    "create_form": ExperienceForm(),
-                },
+                {"experiences": get_all_experiences_by_start_date()},
             )
         return JsonResponse({"message": "Pengalaman berhasil diperbarui."}, status=200)
 

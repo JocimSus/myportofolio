@@ -35,8 +35,16 @@
     {% include "home/components/experience_delete_modal.html" %}
   {% endif %}
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
-  {% if perms.home.delete_experience %}
+  {% if perms.home.change_experience or perms.home.add_experience or perms.home.delete_experience %}
     <script>
+      document.body.addEventListener("htmx:afterRequest", (event) => {
+        const { elt, xhr, successful } = event.detail;
+        if (elt?.id !== "experience-form" || !successful || !xhr) return;
+        if (xhr.getResponseHeader("HX-Retarget")) return;
+        document.getElementById("add-experience-modal")?.hidePopover();
+      });
+
+      {% if perms.home.delete_experience %}
       const experienceContainer = document.getElementById("experience-container");
       const deleteExperienceModal = document.getElementById("delete-experience-modal");
       const deleteExperienceForm = document.getElementById("delete-experience-form");
@@ -83,6 +91,7 @@
         }
         deleteExperienceModal.hidePopover();
       });
+      {% endif %}
     </script>
   {% endif %}
 {% endblock %}
