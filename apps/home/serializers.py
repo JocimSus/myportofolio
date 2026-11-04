@@ -3,7 +3,7 @@ from typing import ClassVar
 from django.utils.html import strip_tags
 from rest_framework import serializers
 
-from .models import Project
+from .models import Experience, Project
 
 
 class TechnologiesField(serializers.ListField):
@@ -63,7 +63,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         return value
 
     def validate_description(self, value):
-        return strip_tags(value)
+        value = strip_tags(value).strip()
+        if not value:
+            raise serializers.ValidationError("Description cannot be empty.")
+        return value
+
+    def validate_category(self, value):
+        return strip_tags(value).strip()
 
     def get_star_count(self, obj):
         return obj.starred_by.count()
@@ -76,3 +82,36 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_starred_by_names(self, obj):
         return ", ".join(user.username for user in obj.starred_by.all())
+
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    is_ongoing = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Experience
+        fields: ClassVar = [
+            "id",
+            "title",
+            "description",
+            "category",
+            "thumbnail",
+            "start_date",
+            "end_date",
+            "is_ongoing",
+        ]
+        read_only_fields: ClassVar = ["id", "is_ongoing"]
+
+    def validate_title(self, value):
+        value = strip_tags(value).strip()
+        if not value:
+            raise serializers.ValidationError("Title cannot be empty.")
+        return value
+
+    def validate_description(self, value):
+        value = strip_tags(value).strip()
+        if not value:
+            raise serializers.ValidationError("Description cannot be empty.")
+        return value
+
+    def validate_category(self, value):
+        return strip_tags(value).strip()

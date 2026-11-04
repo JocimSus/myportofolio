@@ -81,4 +81,5 @@ urlpatterns = [
     path("logout/", views.logout_user, name="logout"),
     # API
     path("api/experiences/", views.get_experiences_json, name="get_experiences_json"),
+    path("api/projects/", views.get_projects_json, name="get_projects_json"),
 ]
