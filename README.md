@@ -297,7 +297,15 @@ uv run djlint --lint .
 
 ## API Documentation
 
-All API's do not have endpoints, these serve only as documentation.
+### DRF API v1
+
+Endpoint Django REST Framework tersedia pada `/api/v1/` untuk resource `projects` dan `experiences`:
+
+- `GET`/`POST` `/api/v1/projects/` dan `/api/v1/experiences/`
+- `GET`/`PUT`/`PATCH`/`DELETE` `/api/v1/projects/<uuid>/` dan `/api/v1/experiences/<uuid>/`
+- `POST` `/api/v1/projects/<uuid>/star/`
+
+Endpoint list mendukung query `?title=<kata-kunci>`. Semua pengguna dapat membaca, pengguna terautentikasi dapat memberi star pada project, editor hanya dapat memperbarui, dan superuser dapat melakukan CRUD.
 
 ### 1. Project List API
 
@@ -452,3 +460,18 @@ Saya menggunakan Chatbot Google Gemini selama proses programming untuk membantu 
 2. Membantu saya dalam menentukan refactor kode JS yang efektif.
 
 Pada kali ini, AI sering sekali menyarankan perubahan yang tidak sesuai dengan konteks halaman sebenarnya. AI terkadang memberikan suatu id yang belum ada, ataupun method yang tidak ada di JS. Saya melakukan mitigasi dengan mengerjakan sebagian besar scripting JS secara manual untuk memastikan kode dapaat berjalan.
+
+### Tugas 6
+
+Jelaskan apa yang dimaksud dengan REST dan mengapa mengembalikan JSON saja belum cukup untuk menyebut sebuah API sebagai RESTful! Jelaskan pula perbedaan PUT dan PATCH beserta contoh kapan masing-masing sebaiknya digunakan!
+Jelaskan peran serializer pada Django REST Framework! Apa keuntungannya dibandingkan merakit dictionary secara manual dengan JsonResponse seperti pada Tutorial 05?
+Jelaskan perbedaan autentikasi dan otorisasi pada Django REST Framework! Mengapa hak akses harus diperiksa dengan permission class di server, bukan hanya dengan menyembunyikan tombol di template?
+Jelaskan mengapa permintaan yang mengubah data tetap memerlukan token CSRF ketika API memakai SessionAuthentication! Mengapa test yang memakai force_authenticate tidak cukup untuk membuktikan bahwa perlindungan CSRF berjalan?
+
+1. REST adalah arsitektur yang digunakan untuk membangun suatu API menggunakan standard HTTP methods. Agar suatu API dapat disebut RESTful, API harus menerima HTTP operations yang sesuai dengan semanticsnya dan mengembalikan JSON sesuai dengan endpoint yang disediakan. `PUT` adalah HTTP method idempotent yang berfungsi untuk mendeklarasikan bentuk suatu resource dengan lengkap, sedangkan `PATCH` adalah HTTP method yang berfungsi untuk mengubah sebagian data dari suatu resource. Contoh implementasinya pada portofolioku terdapat pada form edit experience yang mengirim `PATCH` agar hanya field yang berubah dikirim. 
+2. Serializer pada DRF menstandardisasi bentuk JSON yang dikirim, memvalidasi bentuk JSON, dan mengurangi kemungkinan terjadinya human error ketika membangun response JSON secara manual.
+3. Authorization adalah hak yang dimiliki suatu pengguna untuk melakukan atau mengakses resource apapun, sedangkan Authentication memverifikasi identitas seorang pengguna. Basic Principles of Web Security mengharuskan keamanan data berada pada sisi backend karena validasi pada sisi frontend dapat dimutasi dan dimodifikasi oleh pengguna dengan lebih mudah daripada memerlukan akses penuh ke backend. Apabila, hanya button saja yang dihilangkan tampilannya, user tetap dapat mengakses endpoint melalui aplikasi 3rd party seperti Postman untuk langsung komunikasi dengan backend walaupun seharusnya tidak memiliki hak akses
+4. `SessionAuthentication` hanya memastikan bahwa browser mengirim dan membaca cookie session suatu pengguna setiap kali melakukan request/response. Namun, CSRF token berfungsi untuk memastikan bahwa request berasal dari pengguna yang memiliki otorisasi sesuai dan dari halaman situs yang benar. Force authenticate pada test suite mematikan mekanisme session dan CSRF token sehingga keamanan tidak dapat divalidasi melalui test tersebut.
+
+#### AI Disclosure
+Saya menggunakan Codex sebagai coding assistant untuk membantu membaca instruksi tugas, menyusun test-driven development, dan mengimplementasikan serializer, permission class, endpoint DRF, serta integrasi HTMX. Saya meninjau hasil perubahan, menentukan penggunaan permission bawaan Django, dan menjalankan test serta lint sebelum commit.
