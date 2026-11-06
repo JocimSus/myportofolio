@@ -1,9 +1,9 @@
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import Group, Permission, User
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from ..models import Project
+from ..models import Experience, Project
 
 
 class ProjectAPITest(TestCase):
@@ -126,3 +126,97 @@ class ProjectAPITest(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
+
+
+class ExperienceAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.editor_group, _ = Group.objects.get_or_create(name="editor")
+        self.editor_group.permissions.add(
+            Permission.objects.get(codename="change_experience")
+        )
+        self.editor = User.objects.create_user(username="editor", password="secret")
+        self.editor.groups.add(self.editor_group)
+        self.regular_user = User.objects.create_user(
+            username="regular-user", password="secret"
+        )
+        self.superuser = User.objects.create_superuser(
+            username="admin", email="admin@example.com", password="secret"
+        )
+        self.experience = Experience.objects.create(
+            title="Teaching Assistant",
+            description="Helped students learn Django.",
+            category="organization",
+            start_date="2025-01-01",
+        )
+        self.list_url = reverse("api:experience-list")
+        self.detail_url = reverse("api:experience-detail", args=[self.experience.id])
+
+    def test_public_users_can_read_and_search_experiences(self):
+        response = self.client.get(self.list_url, {"title": "teaching"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()[0]["title"], self.experience.title)
+
+    def test_editor_can_only_update_and_superuser_can_manage(self):
+        self.client.force_authenticate(self.editor)
+        response = self.client.patch(self.detail_url, {"title": "Updated role"})
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            self.list_url,
+            {
+                "title": "New role",
+                "description": "Description",
+                "category": "organization",
+                "start_date": "2025-02-01",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Experience.objects.count(), 1)
+
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(Experience.objects.filter(pk=self.experience.pk).exists())
+
+        self.client.force_authenticate(self.superuser)
+        response = self.client.post(
+            self.list_url,
+            {
+                "title": "New role",
+                "description": "Description",
+                "category": "organization",
+                "start_date": "2025-02-01",
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+
+    def test_validation_sanitizes_html(self):
+        self.client.force_authenticate(self.superuser)
+        response = self.client.post(
+            self.list_url,
+            {
+                "title": "<b>Unsafe</b>",
+                "description": "Description",
+                "category": "organization",
+                "start_date": "2025-02-01",
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["title"], "Unsafe")
+
+    def test_session_mutation_without_csrf_token_is_rejected(self):
+        csrf_client = APIClient(enforce_csrf_checks=True)
+        self.assertTrue(csrf_client.login(username="admin", password="secret"))
+
+        response = csrf_client.post(
+            self.list_url,
+            {
+                "title": "New role",
+                "description": "Description",
+                "category": "organization",
+                "start_date": "2025-02-01",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)

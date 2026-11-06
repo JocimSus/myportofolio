@@ -553,7 +553,7 @@ class HtmxExperienceViewTest(TestCase):
         self.assertNotContains(response, "hx-confirm=")
         self.assertContains(
             response,
-            'elt?.id !== "experience-form"',
+            "htmx.ajax('DELETE'",
         )
         self.assertNotContains(response, "hx-on::after-request")
 
@@ -561,7 +561,7 @@ class HtmxExperienceViewTest(TestCase):
         self.client.force_login(self.superuser)
         response = self.client.get(reverse("home:experience"))
 
-        self.assertContains(response, 'hx-post="/experience/add-ajax/"')
+        self.assertContains(response, 'hx-post="/api/v1/experiences/"')
         self.assertContains(response, 'hx-headers=\'{"X-CSRFToken": "')
         self.assertNotContains(response, "hx-put=")
 
@@ -572,7 +572,7 @@ class HtmxExperienceViewTest(TestCase):
 
         self.assertContains(
             response,
-            f'hx-post="/experience/{self.experience.id}/edit/ajax/"',
+            f'hx-patch="/api/v1/experiences/{self.experience.id}/"',
         )
         self.assertContains(response, self.experience.title)
 

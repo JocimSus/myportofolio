@@ -1,10 +1,9 @@
 <form id="experience-form"
       method="post"
-      action="{% if mode == 'update' %}{% url 'home:update_experience_ajax' experience.pk %}{% else %}{% url 'home:create_experience_ajax' %}{% endif %}"
-      hx-post="{% if mode == 'update' %}{% url 'home:update_experience_ajax' experience.pk %}{% else %}{% url 'home:create_experience_ajax' %}{% endif %}"
-      hx-target="#experience-container"
-      hx-swap="innerHTML"
-      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+      action="{% if mode == 'update' %}{% url 'api:experience-detail' experience.pk %}{% else %}{% url 'api:experience-list' %}{% endif %}"
+      {% if mode == 'update' %}hx-patch="{% url 'api:experience-detail' experience.pk %}"{% else %}hx-post="{% url 'api:experience-list' %}"{% endif %}
+      hx-swap="none"
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}", "Accept": "application/json"}'
       class="flex flex-col">
   {% csrf_token %}
   {% for field in form %}
@@ -18,6 +17,8 @@
       </div>
       {% if field.help_text %}<p class="text-xs text-neutral-500 mt-0.5">{{ field.help_text }}</p>{% endif %}
       {% for error in field.errors %}<p class="text-red-400 text-sm">{{ error }}</p>{% endfor %}
+      <p id="error-{{ field.name }}"
+         class="field-error hidden text-red-400 text-sm"></p>
     </div>
   {% endfor %}
   <div class="flex items-center justify-end gap-3 pt-4 mt-2 border-t border-neutral-300">
