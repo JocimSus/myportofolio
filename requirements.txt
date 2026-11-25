@@ -9,6 +9,7 @@ coverage==7.17.0
 cssbeautifier==2.0.3
 django==5.2
 django-browser-reload==1.21.0
+django-cors-headers==4.9.0
 django-tailwind==4.5.0
 djangorestframework==3.18.3
 djlint==1.44.2
