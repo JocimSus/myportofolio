@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -18,7 +18,7 @@ from .serializers import ExperienceSerializer, ProjectSerializer
 
 
 @api_view(["GET", "HEAD", "POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsProjectOwnerOrEditorOrReadOnly])
 def project_list(request):
     projects = Project.objects.prefetch_related("starred_by").order_by("title")
@@ -39,7 +39,7 @@ def project_list(request):
 
 
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsProjectOwnerOrEditorOrReadOnly])
 def project_detail(request, project_id):
     project = get_object_or_404(
@@ -66,7 +66,7 @@ def project_detail(request, project_id):
 
 
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def project_star(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -81,7 +81,7 @@ def project_star(request, project_id):
 
 
 @api_view(["GET", "HEAD", "POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsExperienceOwnerOrEditorOrReadOnly])
 def experience_list(request):
     experiences = Experience.objects.order_by("start_date")
@@ -102,7 +102,7 @@ def experience_list(request):
 
 
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsExperienceOwnerOrEditorOrReadOnly])
 def experience_detail(request, experience_id):
     experience = get_object_or_404(Experience, pk=experience_id)
@@ -124,3 +124,13 @@ def experience_detail(request, experience_id):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
+
+
+# Auth
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def api_logout(request):
+    if request.auth is not None:
+        request.auth.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)

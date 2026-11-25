@@ -36,6 +36,11 @@ ROOT_URLCONF = os.getenv("DJANGO_ROOT_URLCONF", "config.urls")
 WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "config.wsgi.application")
 PRODUCTION = os.getenv("PRODUCTION", "False").lower() == "true"
 PASSWORD = os.getenv("PASSWORD", "your_password")
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 # Application definition
 
@@ -46,7 +51,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "rest_framework",
+    "rest_framework.authtoken",
     "tailwind",
     "apps.theme",
     "apps.home",
@@ -56,6 +63,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -85,6 +93,12 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+}
 
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
